@@ -40,6 +40,6 @@ brews:
       email: bot@goreleaser.com
     folder: Formula
     homepage: "https://github.com/go-johnnyhe/waveland"
-    description: "A CLI tool for mocking LeetCode data"
+    description: "A CLI tool collab coding"
     install: |
       bin.install "waveland"
