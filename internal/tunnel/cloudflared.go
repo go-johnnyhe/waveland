@@ -86,7 +86,7 @@ func getCloudflaredBinary() (string, error) {
 			return "", fmt.Errorf("failed to create file: %v", err)
 		}
 		defer file.Close()
-		
+
 		// copy file to binary
 		_, err = io.Copy(file, resp.Body)
 		if err != nil {
@@ -138,15 +138,13 @@ func extractCloudflaredFromTgz(reader io.Reader, outputPath string) error {
 	return fmt.Errorf("cloudflared binary not found in the downloaded archive")
 }
 
-
-func StartCloudflaredTunnel(ctx context.Context) (string, error){
+func StartCloudflaredTunnel(ctx context.Context, port int) (string, error) {
 	binary, err := getCloudflaredBinary()
 	if err != nil {
 		return "", fmt.Errorf("error getting cloudflared binary: %v", err)
 	}
 
-
-	cmd := exec.CommandContext(ctx, binary, "tunnel", "--url", "localhost:8080")
+	cmd := exec.CommandContext(ctx, binary, "tunnel", "--url", fmt.Sprintf("localhost:%d", port))
 	// stdout, err := cmd.StdoutPipe()
 	// if err != nil {
 	// 	return "", fmt.Errorf("failed to create pipe: %v", err)
@@ -185,7 +183,7 @@ func StartCloudflaredTunnel(ctx context.Context) (string, error){
 	}()
 
 	select {
-	case url := <- urlChan:
+	case url := <-urlChan:
 		return url, nil
 	case <-timeout:
 		cmd.Process.Kill()

@@ -3,19 +3,20 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/go-johnnyhe/waveland/internal/client"
+	"github.com/go-johnnyhe/waveland/internal/tunnel"
 	"github.com/go-johnnyhe/waveland/server"
+	"github.com/gorilla/websocket"
+	"github.com/spf13/cobra"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
-	"github.com/go-johnnyhe/waveland/internal/client"
-	"github.com/go-johnnyhe/waveland/internal/tunnel"
-	"github.com/gorilla/websocket"
-	"github.com/spf13/cobra"
 )
 
+var startPort int
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
@@ -61,22 +62,27 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 
 		// fmt.Printf("Starting the mock session with %s\n", fileName)
 
+		// Find available port
+		actualPort, listener, err := findAvailablePort(startPort)
+		if err != nil {
+			fmt.Printf("Failed to find available port: %v\n", err)
+			os.Exit(1)
+		}
+
+		if actualPort != startPort {
+			fmt.Printf("Port %d was in use, using port %d instead\n", startPort, actualPort)
+		}
+
 		// Create a context to link with a command line process so that when you stop, we know where to exit
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
+
 		// start server in go routine
 		http.HandleFunc("/ws", server.StartServer)
-		srv := &http.Server{Addr: ":8080"}
+		srv := &http.Server{}
 		go func() {
-			// fmt.Println("Websocket server started on :8080")
-			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-				if strings.Contains(err.Error(), "address already in use") {
-					fmt.Println("Port 8080 is already in use, please close other applications using this port.")
-					fmt.Println("\nTo find what's using port 8080:")
-					fmt.Println("  Linux/Mac: lsof -i :8080")
-					fmt.Println("  Windows: netstat -ano | findstr :8080")
-				}
-				fmt.Printf("Server failed to start: %v\n", err)
+			if err := srv.Serve(listener); err != http.ErrServerClosed {
+				fmt.Printf("Server failed: %v\n", err)
 				os.Exit(1)
 			}
 		}()
@@ -85,10 +91,10 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 		time.Sleep(1 * time.Second)
 
 		// fmt.Println("Connecting...")
-		tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx)
+		tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx, actualPort)
 		if err != nil {
 			fmt.Printf("Failed to create tunnel: %v\n", err)
-			fmt.Println("Server is running locally on localhost:8080")
+			fmt.Printf("Server is running locally on localhost:%d\n", actualPort)
 			return
 		}
 
@@ -104,9 +110,9 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 		}
 
 		// let the starter user connect as a client too
-		go func(ctx context.Context) {
+		go func(ctx context.Context, port int) {
 			time.Sleep(500 * time.Millisecond)
-			conn, _, err := websocket.DefaultDialer.Dial("ws://localhost:8080/ws",nil)
+			conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://localhost:%d/ws", port), nil)
 			if err != nil {
 				fmt.Println("Error connecting to websocket: ", err)
 				return
@@ -117,19 +123,28 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 			c.SendFile(fileName)
 			c.Start(ctx)
 			<-ctx.Done()
-		}(ctx)
+		}(ctx, actualPort)
 
 		<-ctx.Done()
 		srv.Shutdown(context.Background())
 		time.Sleep(100 * time.Millisecond)
 		fmt.Println("")
 		fmt.Println("Goodbye!")
-		
+
 	},
 }
 
-
+func findAvailablePort(startPort int) (int, net.Listener, error) {
+	for port := startPort; port <= startPort+100; port++ {
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		if err == nil {
+			return port, listener, nil
+		}
+	}
+	return 0, nil, fmt.Errorf("no available ports found between %d and %d", startPort, startPort+100)
+}
 
 func init() {
 	rootCmd.AddCommand(startCmd)
+	startCmd.Flags().IntVarP(&startPort, "port", "p", 8080, "Port to run the server on (will auto-increment if in use)")
 }
