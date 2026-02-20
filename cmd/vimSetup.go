@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 tianshengqingxiang@gmail.com
 */
 package cmd
 
@@ -73,13 +73,15 @@ vim.api.nvim_create_autocmd(
 )`
 
 var (
-	vimSetupAuto  bool
-	vimSetupQuiet bool
+	vimSetupAuto    bool
+	vimSetupQuiet   bool
+	vimSetupVerbose bool
 )
 
 var vimSetupCmd = &cobra.Command{
-	Use:   "vimSetup",
-	Short: "Set up your vim/nvim to autoreload so your partner's changes instantly appear",
+	Use:   "setup-editor",
+	Short: "Configure Vim/Neovim to auto-reload files during a session",
+	Aliases: []string{"vimSetup"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		failures := []string{}
 		var ok bool
@@ -94,13 +96,11 @@ var vimSetupCmd = &cobra.Command{
 			if fileExists(dst) {
 				alreadyConfigured = append(alreadyConfigured, "Neovim")
 			} else {
-				if !vimSetupQuiet {
-					fmt.Println("DEBUG copying to →", dst)
+				if vimSetupVerbose {
+					fmt.Println("Installing to:", dst)
 				}
 				if err := copyFile(dst, pluginBody); err == nil {
-					if !vimSetupQuiet {
-						fmt.Println("✅ Neovim config is done (data path)")
-					}
+					fmt.Println("✅ Neovim configured (data path)")
 					ok = true
 				} else {
 					failures = append(failures, "Neovim-data: "+err.Error())
@@ -117,13 +117,11 @@ var vimSetupCmd = &cobra.Command{
 					alreadyConfigured = append(alreadyConfigured, "Neovim")
 				}
 			} else {
-				if !vimSetupQuiet {
-					fmt.Println("DEBUG copying to →", cfg)
+				if vimSetupVerbose {
+					fmt.Println("Installing to:", cfg)
 				}
 				if err := installNvimScriptAfterPlugin(cfg); err == nil {
-					if !vimSetupQuiet {
-						fmt.Println("✅ Neovim config is done (after/plugin path), restart your nvim")
-					}
+					fmt.Println("✅ Neovim configured — restart nvim to activate")
 					ok = true
 				} else {
 					failures = append(failures, "Neovim-cfg: "+err.Error())
@@ -139,13 +137,11 @@ var vimSetupCmd = &cobra.Command{
 		if fileExists(configDst) {
 			alreadyConfigured = append(alreadyConfigured, "Vim")
 		} else {
-			if !vimSetupQuiet {
-				fmt.Println("DEBUG copying to →", configDst)
+			if vimSetupVerbose {
+				fmt.Println("Installing to:", configDst)
 			}
 			if err := copyFile(configDst, pluginBody); err == nil {
-				if !vimSetupQuiet {
-					fmt.Println("✅ Vim config is done, restart your vim")
-				}
+				fmt.Println("✅ Vim configured — restart vim to activate")
 				ok = true
 			} else {
 				failures = append(failures, "Vim: "+err.Error())
@@ -185,8 +181,8 @@ func nvimStdPath(which string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !vimSetupQuiet {
-		fmt.Printf("RAW %s output: %q\n", which, out)
+	if vimSetupVerbose {
+		fmt.Printf("nvim stdpath(%s): %q\n", which, out)
 	}
 	s := strings.TrimSpace(string(out))
 	s = strings.TrimSuffix(s, "%")
@@ -203,8 +199,8 @@ func nvimConfigDir() (string, error) {
 
 func installNvimScriptAfterPlugin(cfg string) error {
 	dst := filepath.Join(cfg, "after", "plugin", "shadow.lua")
-	if !vimSetupQuiet {
-		fmt.Println("DEBUG copying to →", dst)
+	if vimSetupVerbose {
+		fmt.Println("Installing to:", dst)
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 		return err
@@ -228,5 +224,7 @@ func copyFile(dest string, body []byte) error {
 func init() {
 	rootCmd.AddCommand(vimSetupCmd)
 	vimSetupCmd.Flags().BoolVar(&vimSetupAuto, "auto", false, "Run in automatic mode (no prompts, idempotent)")
-	vimSetupCmd.Flags().BoolVar(&vimSetupQuiet, "quiet", false, "Suppress debug output")
+	vimSetupCmd.Flags().BoolVar(&vimSetupVerbose, "verbose", false, "Show detailed installation paths")
+	vimSetupCmd.Flags().BoolVar(&vimSetupQuiet, "quiet", false, "Suppress all output")
+	vimSetupCmd.Flags().MarkHidden("quiet")
 }

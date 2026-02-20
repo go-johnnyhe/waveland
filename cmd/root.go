@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 tianshengqingxiang@gmail.com
 */
 package cmd
 
@@ -11,22 +11,19 @@ import (
 
 var Version = "dev"
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "shadow",
 	Short: "Instantly share your code editor with anyone, anywhere - no setup, just shadow start",
-	Long: `shadow is a real-time collaborative coding tool designed for mock interviews and pair programming.
-Share your code instantly with friends, colleagues, or interview partners without any setup or configuration.
+	Long: `shadow is a real-time collaborative coding tool for pair programming, code reviews, and live debugging.
+Share your code instantly with anyone — no accounts, no setup, no configuration.
 
 How it works:
-1. Go to your working directory and start a session: shadow start .
-2. Share the generated URL with your partner
-3. They join with: shadow join <url>
-4. Code together in real-time using your favorite editors
+  1. Start a session:    shadow start .
+  2. Share the URL with your partner
+  3. They join with:     shadow join '<url>'
+  4. Code together in real-time using your favorite editors
 
-No accounts, no servers to manage, no complex setup - just pure collaborative coding.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+No accounts, no servers to manage — just pure collaborative coding.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		showVersion, _ := cmd.Flags().GetBool("version")
 		if showVersion {
@@ -52,9 +49,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().Bool("version", false, "Print the version and exit")
-
 }
 
 func isInteractiveSession() bool {

@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"sync/atomic"
 	"time"
 )
 
@@ -118,7 +119,25 @@ func runStart(opts StartOptions) error {
 
 	time.Sleep(1 * time.Second)
 
+	spinDone := make(chan struct{})
+	go func() {
+		frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+		i := 0
+		for {
+			select {
+			case <-spinDone:
+				fmt.Printf("\r\033[K")
+				return
+			default:
+				fmt.Printf("\r%s Creating tunnel...", frames[i%len(frames)])
+				i++
+				time.Sleep(80 * time.Millisecond)
+			}
+		}
+	}()
+
 	tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx, actualPort)
+	close(spinDone)
 	if err != nil {
 		return fmt.Errorf("failed to create tunnel: %w (server is running locally on localhost:%d)", err, actualPort)
 	}
@@ -127,18 +146,19 @@ func runStart(opts StartOptions) error {
 		return err
 	}
 
-	fmt.Printf("\n✅ Shadowing %s\n\n", opts.Path)
-	fmt.Println("Share this command with your partner:")
-	quotedJoinURL := fmt.Sprintf("%q", shareJoinURL)
+	fmt.Printf("\n✅ Session live — sharing %s\n\n", opts.Path)
 	if os.Getenv("TERM") != "dumb" && os.Getenv("NO_COLOR") == "" {
-		fmt.Printf("\n  \033[1mshadow join %s\033[0m\n", quotedJoinURL)
+		fmt.Printf("  \033[1mshadow join '%s'\033[0m\n\n", shareJoinURL)
 	} else {
-		fmt.Printf("\n  shadow join %s\n", quotedJoinURL)
+		fmt.Printf("  shadow join '%s'\n\n", shareJoinURL)
 	}
-	fmt.Println("\nE2E: file payloads are encrypted client-to-client.")
+	fmt.Println("  Encrypted end-to-end. Ctrl+C to stop.")
 	if opts.ReadOnlyJoiners {
-		fmt.Println("Mode: joiners are read-only. Host edits continue syncing.")
+		fmt.Println("  Mode: joiners are read-only.")
 	}
+
+	var sessionFileCount atomic.Int64
+	sessionStart := time.Now()
 
 	go func(runCtx context.Context, port int) {
 		time.Sleep(500 * time.Millisecond)
@@ -165,6 +185,7 @@ func runStart(opts StartOptions) error {
 			fmt.Println("Error sending initial snapshot:", snapshotErr)
 		} else if count > 0 {
 			fmt.Printf("Initial snapshot sent (%d files)\n", count)
+			sessionFileCount.Add(int64(count))
 		}
 		<-runCtx.Done()
 	}(ctx, actualPort)
@@ -172,7 +193,8 @@ func runStart(opts StartOptions) error {
 	<-ctx.Done()
 	srv.Shutdown(context.Background())
 	time.Sleep(100 * time.Millisecond)
-	fmt.Println("\nGoodbye!")
+	elapsed := time.Since(sessionStart).Truncate(time.Second)
+	fmt.Printf("\nSession ended. %d files synced over %s.\n", sessionFileCount.Load(), formatDuration(elapsed))
 	return nil
 }
 
@@ -195,12 +217,13 @@ func runJoin(opts JoinOptions) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	fmt.Println("Starting your mock interview session ...")
+	fmt.Println("Connecting to session...")
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err != nil {
 		return fmt.Errorf("error making connection: %w", err)
 	}
 	defer conn.Close()
+	fmt.Println("✅ Connected. Syncing files...")
 
 	c, err := client.NewClient(conn, client.Options{
 		E2EKey: joinKey,
@@ -208,10 +231,12 @@ func runJoin(opts JoinOptions) error {
 	if err != nil {
 		return fmt.Errorf("error initializing E2E client: %w", err)
 	}
+	sessionStart := time.Now()
 	c.Start(ctx)
 
 	<-ctx.Done()
-	fmt.Println("\nGoodbye!")
+	elapsed := time.Since(sessionStart).Truncate(time.Second)
+	fmt.Printf("\nSession ended after %s.\n", formatDuration(elapsed))
 	return nil
 }
 
@@ -268,4 +293,24 @@ func findAvailablePort(startPort int) (int, net.Listener, error) {
 		}
 	}
 	return 0, nil, fmt.Errorf("no available ports found between %d and %d", startPort, startPort+100)
+}
+
+func formatDuration(d time.Duration) string {
+	if d < time.Minute {
+		return fmt.Sprintf("%ds", int(d.Seconds()))
+	}
+	if d < time.Hour {
+		m := int(d.Minutes())
+		s := int(d.Seconds()) % 60
+		if s == 0 {
+			return fmt.Sprintf("%dm", m)
+		}
+		return fmt.Sprintf("%dm%ds", m, s)
+	}
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	if m == 0 {
+		return fmt.Sprintf("%dh", h)
+	}
+	return fmt.Sprintf("%dh%dm", h, m)
 }

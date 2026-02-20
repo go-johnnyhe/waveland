@@ -244,7 +244,19 @@ func (c *Client) readLoop() {
 			if ok && !c.isHost {
 				c.readOnlyJoinerMode.Store(readOnly)
 				if readOnly {
-					fmt.Println("Read-only mode is enabled by host. Local edits will not sync.")
+					fmt.Println("Read-only mode enabled. Local edits will not sync.")
+				}
+			}
+			if peerCount, ok := protocol.ParsePeerCountControl(parts[1]); ok {
+				// Subtract 1 because the server counts us as a client too.
+				// The host also connects as a local client, so peers = total - 1.
+				others := peerCount - 1
+				if others == 1 {
+					fmt.Println("1 peer connected")
+				} else if others > 1 {
+					fmt.Printf("%d peers connected\n", others)
+				} else {
+					fmt.Println("All peers disconnected")
 				}
 			}
 			c.markReady()
@@ -329,7 +341,7 @@ func (c *Client) monitorFiles(ctx context.Context) {
 		os.Exit(1)
 	}
 
-	fmt.Println("Active (Ctrl+C to stop)")
+	fmt.Println("Watching for changes...")
 }
 
 func (c *Client) addWatchRecursive(watcher *fsnotify.Watcher, root string) error {

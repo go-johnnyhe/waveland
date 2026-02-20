@@ -38,6 +38,17 @@ func getReadOnlyJoiners() bool {
 	return sessionOptions.readOnlyJoiners
 }
 
+func broadcastPeerCount(exclude *wsutil.Peer, count int) {
+	msg := protocol.EncodeControlPeerCount(count)
+	clientsMutex.Lock()
+	defer clientsMutex.Unlock()
+	for client := range clients {
+		if client != exclude {
+			client.Write(websocket.TextMessage, msg)
+		}
+	}
+}
+
 func StartServer(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -70,18 +81,19 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	log.Println("Connected to websocket!")
-
 	clientsMutex.Lock()
 	clients[p] = true
+	peerCount := len(clients)
 	clientsMutex.Unlock()
+	broadcastPeerCount(p, peerCount)
 
 	defer func() {
 		conn.Close()
 		clientsMutex.Lock()
 		delete(clients, p)
+		peerCount := len(clients)
 		clientsMutex.Unlock()
-		log.Printf("Client disconnected. Total clients now: %d", len(clients))
+		broadcastPeerCount(nil, peerCount)
 	}()
 
 	for {

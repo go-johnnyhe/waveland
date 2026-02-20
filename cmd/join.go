@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2025 tianshengqingxiang@gmail.com
 */
 package cmd
 
@@ -10,7 +10,6 @@ import (
 
 var joinKey string
 
-// joinCmd represents the join command
 var joinCmd = &cobra.Command{
 	Use:   "join <session-url>",
 	Short: "Join an existing collaborative coding session",
@@ -26,7 +25,7 @@ Example:
 The session URL comes from whoever ran 'shadow start'.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
-			fmt.Println("Error: this takes exactly one url")
+			fmt.Println("Error: expected exactly one session URL")
 			cmd.Usage()
 			return
 		}
