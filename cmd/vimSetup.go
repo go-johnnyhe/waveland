@@ -100,7 +100,7 @@ var vimSetupCmd = &cobra.Command{
 					fmt.Println("Installing to:", dst)
 				}
 				if err := copyFile(dst, pluginBody); err == nil {
-					fmt.Println("✅ Neovim configured (data path)")
+					fmt.Println("Neovim configured (data path)")
 					ok = true
 				} else {
 					failures = append(failures, "Neovim-data: "+err.Error())
@@ -121,7 +121,7 @@ var vimSetupCmd = &cobra.Command{
 					fmt.Println("Installing to:", cfg)
 				}
 				if err := installNvimScriptAfterPlugin(cfg); err == nil {
-					fmt.Println("✅ Neovim configured — restart nvim to activate")
+					fmt.Println("Neovim configured — restart nvim to activate")
 					ok = true
 				} else {
 					failures = append(failures, "Neovim-cfg: "+err.Error())
@@ -141,7 +141,7 @@ var vimSetupCmd = &cobra.Command{
 				fmt.Println("Installing to:", configDst)
 			}
 			if err := copyFile(configDst, pluginBody); err == nil {
-				fmt.Println("✅ Vim configured — restart vim to activate")
+				fmt.Println("Vim configured — restart vim to activate")
 				ok = true
 			} else {
 				failures = append(failures, "Vim: "+err.Error())
