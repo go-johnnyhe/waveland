@@ -6,6 +6,7 @@ import (
 	"github.com/go-johnnyhe/shadow/internal/client"
 	"github.com/go-johnnyhe/shadow/internal/e2e"
 	"github.com/go-johnnyhe/shadow/internal/tunnel"
+	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/go-johnnyhe/shadow/server"
 	"github.com/gorilla/websocket"
 	"net"
@@ -129,7 +130,7 @@ func runStart(opts StartOptions) error {
 				fmt.Printf("\r\033[K")
 				return
 			default:
-				fmt.Printf("\r%s Creating tunnel...", frames[i%len(frames)])
+				fmt.Printf("\r  %s %s", frames[i%len(frames)], ui.Dim("casting shadow..."))
 				i++
 				time.Sleep(80 * time.Millisecond)
 			}
@@ -146,16 +147,18 @@ func runStart(opts StartOptions) error {
 		return err
 	}
 
-	fmt.Printf("\n✅ Session live — sharing %s\n\n", opts.Path)
-	if os.Getenv("TERM") != "dumb" && os.Getenv("NO_COLOR") == "" {
-		fmt.Printf("  \033[1mshadow join '%s'\033[0m\n\n", shareJoinURL)
-	} else {
-		fmt.Printf("  shadow join '%s'\n\n", shareJoinURL)
+	displayPath := opts.Path
+	if displayPath == "." {
+		displayPath = filepath.Base(absSharePath)
 	}
-	fmt.Println("  Encrypted end-to-end. Ctrl+C to stop.")
+	fmt.Printf("\n  %s %s\n\n", ui.Accent("◗ shadow"), ui.Dim("— sharing "+displayPath))
+	fmt.Printf("  %s\n", ui.Dim("share this with your partner:"))
+	fmt.Printf("  %s\n\n", ui.Bold(fmt.Sprintf("shadow join '%s'", shareJoinURL)))
+	footer := "encrypted end-to-end · ctrl+c to stop"
 	if opts.ReadOnlyJoiners {
-		fmt.Println("  Mode: joiners are read-only.")
+		footer += " · joiners are read-only"
 	}
+	fmt.Printf("  %s\n", ui.Dim(footer))
 
 	var sessionFileCount atomic.Int64
 	sessionStart := time.Now()
@@ -184,7 +187,7 @@ func runStart(opts StartOptions) error {
 		if snapshotErr != nil {
 			fmt.Println("Error sending initial snapshot:", snapshotErr)
 		} else if count > 0 {
-			fmt.Printf("Initial snapshot sent (%d files)\n", count)
+			fmt.Printf("%s\n", ui.Dim(fmt.Sprintf("ready · %d files", count)))
 			sessionFileCount.Add(int64(count))
 		}
 		<-runCtx.Done()
@@ -194,7 +197,7 @@ func runStart(opts StartOptions) error {
 	srv.Shutdown(context.Background())
 	time.Sleep(100 * time.Millisecond)
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
-	fmt.Printf("\nSession ended. %d files synced over %s.\n", sessionFileCount.Load(), formatDuration(elapsed))
+	fmt.Printf("\n%s\n", ui.Dim(fmt.Sprintf("session ended · %d files · %s", sessionFileCount.Load(), formatDuration(elapsed))))
 	return nil
 }
 
@@ -217,13 +220,15 @@ func runJoin(opts JoinOptions) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	fmt.Println("Connecting to session...")
+	fmt.Printf("\n  %s\n\n", ui.Accent("◗ shadow"))
+	fmt.Printf("  %s", ui.Dim("connecting..."))
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err != nil {
+		fmt.Println()
 		return fmt.Errorf("error making connection: %w", err)
 	}
 	defer conn.Close()
-	fmt.Println("✅ Connected. Syncing files...")
+	fmt.Printf("\r\033[K  %s\n\n", ui.Dim("connected · syncing files"))
 
 	c, err := client.NewClient(conn, client.Options{
 		E2EKey: joinKey,
@@ -236,7 +241,7 @@ func runJoin(opts JoinOptions) error {
 
 	<-ctx.Done()
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
-	fmt.Printf("\nSession ended after %s.\n", formatDuration(elapsed))
+	fmt.Printf("\n%s\n", ui.Dim(fmt.Sprintf("session ended · %s", formatDuration(elapsed))))
 	return nil
 }
 

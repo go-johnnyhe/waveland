@@ -19,6 +19,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-johnnyhe/shadow/internal/e2e"
 	"github.com/go-johnnyhe/shadow/internal/protocol"
+	"github.com/go-johnnyhe/shadow/internal/ui"
 	"github.com/go-johnnyhe/shadow/internal/wsutil"
 	"github.com/gorilla/websocket"
 )
@@ -183,7 +184,6 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 		return false
 	}
 	if fileInfo.Size() > 10*1024*1024 {
-		log.Printf("File %s too large (%d bytes)", relPath, fileInfo.Size())
 		return false
 	}
 	content, err := os.ReadFile(absPath)
@@ -214,7 +214,7 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 	}
 
 	if verbose {
-		fmt.Printf("-> %s\n", relPath)
+		fmt.Printf("%s %s\n", ui.Accent("->"), relPath)
 	}
 	return true
 }
@@ -244,7 +244,7 @@ func (c *Client) readLoop() {
 			if ok && !c.isHost {
 				c.readOnlyJoinerMode.Store(readOnly)
 				if readOnly {
-					fmt.Println("Read-only mode enabled. Local edits will not sync.")
+					fmt.Println(ui.Dim("read-only mode · local edits will not sync"))
 				}
 			}
 			if peerCount, ok := protocol.ParsePeerCountControl(parts[1]); ok {
@@ -252,11 +252,11 @@ func (c *Client) readLoop() {
 				// The host also connects as a local client, so peers = total - 1.
 				others := peerCount - 1
 				if others == 1 {
-					fmt.Println("1 peer connected")
+					fmt.Println(ui.Dim("1 peer connected"))
 				} else if others > 1 {
-					fmt.Printf("%d peers connected\n", others)
+					fmt.Println(ui.Dim(fmt.Sprintf("%d peers connected", others)))
 				} else {
-					fmt.Println("All peers disconnected")
+					fmt.Println(ui.Dim("all peers disconnected"))
 				}
 			}
 			c.markReady()
@@ -305,7 +305,7 @@ func (c *Client) readLoop() {
 			if err = os.WriteFile(destPath, decodedContent, 0644); err != nil {
 				log.Printf("error writing this file: %s: %v\n", relPath, err)
 			} else {
-				fmt.Printf("<- %s\n", relPath)
+				fmt.Printf("%s %s\n", ui.Accent("<-"), relPath)
 			}
 		}()
 		c.lastHash.Store(relPath, fileHash(decodedContent))
@@ -333,15 +333,15 @@ func (c *Client) monitorFiles(ctx context.Context) {
 	go c.processFileEvents(ctx, watcher)
 
 	if err := c.addWatchRecursive(watcher, c.baseDir); err != nil {
-		fmt.Println("\n❌ Cannot watch this directory (filesystem issue)")
-		fmt.Println("\n✅ Quick fix - run these 2 commands:")
-		fmt.Println("   $ mkdir -p /tmp/shadow && cd /tmp/shadow")
-		fmt.Println("   $ shadow join <session-url>")
+		fmt.Println("\nCannot watch this directory (filesystem issue)")
+		fmt.Println("\nQuick fix — run these 2 commands:")
+		fmt.Println("  $ mkdir -p /tmp/shadow && cd /tmp/shadow")
+		fmt.Println("  $ shadow join <session-url>")
 		fmt.Println("\nThis will start your session in a clean directory.")
 		os.Exit(1)
 	}
 
-	fmt.Println("Watching for changes...")
+	fmt.Println(ui.Dim("watching for changes..."))
 }
 
 func (c *Client) addWatchRecursive(watcher *fsnotify.Watcher, root string) error {
@@ -498,3 +498,4 @@ func (c *Client) shouldIgnoreOutboundRel(relPath string, isDir bool) bool {
 func (c *Client) shouldIgnoreInboundRel(relPath string) bool {
 	return shouldIgnoreInbound(relPath)
 }
+
