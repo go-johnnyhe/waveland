@@ -214,7 +214,7 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 	}
 
 	if verbose {
-		fmt.Printf("%s %s\n", ui.Accent("->"), relPath)
+		fmt.Printf("%s %s\n", ui.OutArrow("→"), relPath)
 	}
 	return true
 }
@@ -305,7 +305,7 @@ func (c *Client) readLoop() {
 			if err = os.WriteFile(destPath, decodedContent, 0644); err != nil {
 				log.Printf("error writing this file: %s: %v\n", relPath, err)
 			} else {
-				fmt.Printf("%s %s\n", ui.Accent("<-"), relPath)
+				fmt.Printf("%s %s\n", ui.InArrow("←"), relPath)
 			}
 		}()
 		c.lastHash.Store(relPath, fileHash(decodedContent))

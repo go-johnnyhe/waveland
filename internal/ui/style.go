@@ -27,3 +27,17 @@ func Accent(s string) string {
 	}
 	return "\033[2;36m" + s + "\033[0m"
 }
+
+func OutArrow(s string) string {
+	if !UseColor() {
+		return s
+	}
+	return "\033[2;36m" + s + "\033[0m" // cyan dim
+}
+
+func InArrow(s string) string {
+	if !UseColor() {
+		return s
+	}
+	return "\033[2;32m" + s + "\033[0m" // green dim
+}
