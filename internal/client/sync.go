@@ -45,8 +45,8 @@ type Client struct {
 	baseDir               string
 	singleFileRel         string
 	outboundIgnore        *OutboundIgnore
-	timer                 *time.Timer
-	timerMutex            sync.Mutex
+	fileTimers            map[string]*time.Timer
+	fileTimersMu          sync.Mutex
 	isWritingReceivedFile atomic.Bool
 	isHost                bool
 	readOnlyJoinerMode    atomic.Bool
@@ -99,6 +99,7 @@ func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
 		outboundIgnore: NewOutboundIgnore(baseDirAbs),
 		isHost:         opt.IsHost,
 		readyCh:        make(chan struct{}),
+		fileTimers:     make(map[string]*time.Timer),
 	}
 	if c.isHost {
 		c.markReady()
@@ -117,6 +118,19 @@ func (c *Client) Start(ctx context.Context) {
 		}
 		c.monitorFiles(ctx)
 	}()
+	go func() {
+		<-ctx.Done()
+		c.stopAllFileTimers()
+	}()
+}
+
+func (c *Client) stopAllFileTimers() {
+	c.fileTimersMu.Lock()
+	defer c.fileTimersMu.Unlock()
+	for _, t := range c.fileTimers {
+		t.Stop()
+	}
+	c.fileTimers = make(map[string]*time.Timer)
 }
 
 func (c *Client) SendInitialSnapshot() (int, error) {
@@ -480,6 +494,24 @@ func (c *Client) processFileEvents(ctx context.Context, watcher *fsnotify.Watche
 	}
 }
 
+func (c *Client) scheduleFileTimer(relPath string, fn func()) {
+	c.fileTimersMu.Lock()
+	defer c.fileTimersMu.Unlock()
+	if old, ok := c.fileTimers[relPath]; ok {
+		old.Stop()
+	}
+	var t *time.Timer
+	t = time.AfterFunc(50*time.Millisecond, func() {
+		fn()
+		c.fileTimersMu.Lock()
+		if c.fileTimers[relPath] == t {
+			delete(c.fileTimers, relPath)
+		}
+		c.fileTimersMu.Unlock()
+	})
+	c.fileTimers[relPath] = t
+}
+
 func (c *Client) handleFileEvent(event fsnotify.Event) {
 	filePath := event.Name
 
@@ -517,15 +549,7 @@ func (c *Client) handleFileEvent(event fsnotify.Event) {
 		return
 	}
 
-	c.timerMutex.Lock()
-	if c.timer != nil {
-		c.timer.Stop()
-	}
-
-	c.timer = time.AfterFunc(50*time.Millisecond, func() {
-		c.SendFile(filePath)
-	})
-	c.timerMutex.Unlock()
+	c.scheduleFileTimer(relPath, func() { c.SendFile(filePath) })
 }
 
 func (c *Client) handleDeleteEvent(event fsnotify.Event) {
@@ -539,12 +563,7 @@ func (c *Client) handleDeleteEvent(event fsnotify.Event) {
 		return
 	}
 
-	c.timerMutex.Lock()
-	if c.timer != nil {
-		c.timer.Stop()
-	}
-
-	c.timer = time.AfterFunc(50*time.Millisecond, func() {
+	c.scheduleFileTimer(relPath, func() {
 		// Rename often emits delete before create; avoid false delete if file reappears.
 		if _, statErr := os.Stat(filePath); statErr == nil {
 			c.SendFile(filePath)
@@ -557,7 +576,6 @@ func (c *Client) handleDeleteEvent(event fsnotify.Event) {
 			}
 		}
 	})
-	c.timerMutex.Unlock()
 }
 
 func (c *Client) relativeProtocolPath(filePath string) (string, error) {
