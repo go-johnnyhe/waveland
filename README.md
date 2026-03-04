@@ -11,7 +11,7 @@ Real-time code collaboration that works with any editor. Like Google Docs, but f
 curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh
 ```
 
-[view install script](install.sh) | or install with Go:
+or install with Go:
 
 ```bash
 go install github.com/go-johnnyhe/shadow@latest
