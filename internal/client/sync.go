@@ -114,8 +114,8 @@ func (c *Client) Start(ctx context.Context) {
 			select {
 			case <-c.readyCh:
 			case <-time.After(10 * time.Second):
-				fmt.Println(ui.Warn("⚠ timed out waiting for server control message"))
-				return
+				// Safety fallback: start monitoring even if control
+				// message hasn't arrived (e.g. high-latency tunnel).
 			case <-ctx.Done():
 				return
 			}
