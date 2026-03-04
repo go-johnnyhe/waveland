@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/go-johnnyhe/shadow/internal/protocol"
 	"github.com/go-johnnyhe/shadow/internal/wsutil"
 	"github.com/gorilla/websocket"
@@ -17,6 +19,7 @@ type clientPeer interface {
 
 var clients = make(map[clientPeer]struct{})
 var clientsMutex sync.Mutex
+var hostPeer clientPeer
 var sessionOptions = struct {
 	mu              sync.RWMutex
 	readOnlyJoiners bool
@@ -139,6 +142,9 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 
 	clientsMutex.Lock()
 	clients[p] = struct{}{}
+	if hostPeer == nil {
+		hostPeer = p
+	}
 	peerCount := len(clients)
 	clientsMutex.Unlock()
 	broadcastPeerCount(p, peerCount)
@@ -161,6 +167,13 @@ func StartServer(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		if msgType == websocket.TextMessage {
+			// When read-only joiners is enabled, only relay encrypted
+			// messages from the host peer. Non-host peers are silenced.
+			if getReadOnlyJoiners() && p != hostPeer {
+				if strings.HasPrefix(string(msg), protocol.EncryptedChannel+"|") {
+					continue
+				}
+			}
 			broadcastText(p, msgType, msg)
 		}
 	}

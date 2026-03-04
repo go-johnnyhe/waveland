@@ -37,7 +37,18 @@ TARBALL="${BIN}_${LATEST#v}_${OS}_${ARCH}.tar.gz"
 URL="https://github.com/$REPO/releases/download/$LATEST/$TARBALL"
 
 echo "➡️  Installing $BIN $LATEST for $OS/$ARCH..."
-curl -sL "$URL" | tar xz
+TMPDIR=$(mktemp -d)
+curl -sL "$URL" | tar xz -C "$TMPDIR"
+# Find the binary (may be at top level or nested)
+BIN_PATH=$(find "$TMPDIR" -name "$BIN" -type f | head -1)
+if [ -z "$BIN_PATH" ]; then
+  echo "❌ Failed to find $BIN in archive"
+  rm -rf "$TMPDIR"
+  exit 1
+fi
+mv "$BIN_PATH" ./$BIN
+chmod +x ./$BIN
+rm -rf "$TMPDIR"
 
 # Try installing to /usr/local/bin or prompt fallback
 INSTALL_DIR=""
@@ -85,4 +96,4 @@ if [ "$AUTO_SETUP" = true ]; then
 fi
 
 echo ""
-echo "🎉 Shadow is ready! Try: shadow start ."
+echo "🎉 Shadow is ready! Run: shadow"

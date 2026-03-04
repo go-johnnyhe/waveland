@@ -113,7 +113,11 @@ func (c *Client) Start(ctx context.Context) {
 		if !c.isHost {
 			select {
 			case <-c.readyCh:
-			case <-time.After(1200 * time.Millisecond):
+			case <-time.After(10 * time.Second):
+				fmt.Println(ui.Warn("⚠ timed out waiting for server control message"))
+				return
+			case <-ctx.Done():
+				return
 			}
 		}
 		c.monitorFiles(ctx)
