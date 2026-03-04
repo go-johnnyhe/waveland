@@ -2,18 +2,19 @@
 
 Real-time code collaboration that works with any editor. Like Google Docs, but for your codebase.
 
-<video src="demo.mp4"
-       width="720"
-       muted
-       autoplay
-       loop
-       playsinline
-       controls></video>
+<!-- To add a demo video: upload demo.mp4 via GitHub's UI (drag into an issue or PR), then paste the resulting URL below. -->
+<!-- <video src="https://github.com/user-attachments/assets/PASTE-ID-HERE" width="720" muted autoplay loop playsinline controls></video> -->
 
 ## Install
 
 ```bash
 curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh
+```
+
+[view install script](install.sh) | or install with Go:
+
+```bash
+go install github.com/go-johnnyhe/shadow@latest
 ```
 
 ## Quick Start
@@ -33,6 +34,16 @@ shadow start .
 # Partner — join with the generated URL
 shadow join 'https://abc123.trycloudflare.com#<key>'
 ```
+
+## How Is This Different?
+
+| | Shadow | VS Code Live Share | Screenshare |
+|---|---|---|---|
+| Editor lock-in | None | VS Code only | None |
+| Latency | Low (WebSocket) | Low | High |
+| Both can edit | Yes | Yes | No |
+| Setup required | Zero | Extension install | None |
+| Encryption | E2E | Microsoft servers | Varies |
 
 ## How It Works
 
@@ -84,29 +95,10 @@ Shadow works at the filesystem level, so it works with **any editor**:
 
 ## Use Cases
 
-- **Pair programming** — code together in real-time, each in your own editor
-- **Technical interviews** — watch candidates code live without screenshare lag
-- **Code reviews** — walk through changes together with live editing
-- **Debugging sessions** — reproduce and fix issues collaboratively
-
-## How Is This Different?
-
-| | Shadow | VS Code Live Share | Screenshare |
-|---|---|---|---|
-| Editor lock-in | None | VS Code only | None |
-| Latency | Low (WebSocket) | Low | High |
-| Both can edit | Yes | Yes | No |
-| Setup required | Zero | Extension install | None |
-| Encryption | E2E | Microsoft servers | Varies |
-
-## Architecture
-
-Shadow uses a client-server model where the server is a pure message relay:
-
-- **Tunnel**: Cloudflared creates a public HTTPS endpoint (downloaded automatically on first run to `~/.shadow/`)
-- **Transport**: WebSocket with 30s heartbeat ping/pong
-- **Encryption**: AES-256-GCM with HMAC-SHA256 key derivation, random 12-byte nonce per message
-- **Sync**: fsnotify file watcher with 50ms debounce, SHA256 dedup to avoid redundant sends
+- **Pair programming**, code together in real-time, each in your own editor
+- **Technical interviews**, watch candidates code live without screenshare lag
+- **Code reviews**, walk through changes together with live editing
+- **Debugging sessions**, reproduce and fix issues collaboratively
 
 ## Limitations
 
@@ -123,6 +115,11 @@ Shadow includes guardrails to prevent accidents:
 - Respects `.gitignore` patterns
 - Ignores `.git`, `node_modules`, swap files, and other common noise
 
----
+## Architecture
 
-Built with Go, WebSockets, and Cloudflare Tunnels. [Open source](https://github.com/go-johnnyhe/shadow).
+Shadow uses a client-server model where the server is a pure message relay:
+
+- **Tunnel**: Cloudflared creates a public HTTPS endpoint (downloaded automatically on first run to `~/.shadow/`)
+- **Transport**: WebSocket with 30s heartbeat ping/pong
+- **Encryption**: AES-256-GCM with HMAC-SHA256 key derivation, random 12-byte nonce per message
+- **Sync**: fsnotify file watcher with 50ms debounce, SHA256 dedup to avoid redundant sends
