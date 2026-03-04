@@ -11,7 +11,18 @@ import (
 	"sync"
 )
 
-var hardcodedIgnore = regexp.MustCompile(`(?i)(?:^|[\\/])(?:\.git|\.hg|\.svn|\.vscode|\.idea|node_modules|\.opencode)(?:[\\/]|$)|(?:^|[\\/])\.s\.pgsql\.\d+$|\.ds_store$|\.sw[a-p0-9]$|\.swp$|\.swo$|~$|\.bak$|\.tmp$`)
+var hardcodedIgnore = regexp.MustCompile(`(?i)` +
+	// Directories: VCS, editors, caches, system, secrets
+	`(?:^|[\\/])(?:\.git|\.hg|\.svn|\.vscode|\.idea|\.opencode|node_modules|` +
+	`__pycache__|\.mypy_cache|\.pytest_cache|\.ruff_cache|` +
+	`\.cache|\.local|\.ssh|\.gnupg|\.aws|\.shadow|\.Trash)(?:[\\/]|$)` +
+	// Shell history, config, and completion files
+	`|(?:^|[\\/])\.(?:bash_history|zsh_history|sh_history|python_history|node_repl_history|lesshst|wget-hsts)(?:\.LOCK)?$` +
+	`|(?:^|[\\/])\.(?:bashrc|zshrc|profile|bash_profile|zprofile|bash_logout|zlogout)$` +
+	`|(?:^|[\\/])\.zcompdump` +
+	// PostgreSQL temp, macOS, vim swap, temp files
+	`|(?:^|[\\/])\.s\.pgsql\.\d+$` +
+	`|\.ds_store$|\.sw[a-p0-9]$|\.swp$|\.swo$|~$|\.bak$|\.tmp$`)
 
 type OutboundIgnore struct {
 	git *gitIgnoreMatcher
