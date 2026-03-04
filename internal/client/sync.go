@@ -390,6 +390,11 @@ func (c *Client) readLoop() {
 			if err = atomicWriteFile(destPath, decodedContent, 0644); err != nil {
 				log.Printf("error writing this file: %s: %v\n", relPath, err)
 			} else {
+				// Nudge IDE file watchers (JetBrains VFS, etc.) that may miss
+				// the atomic rename. A Chtimes on the final path emits a clean
+				// metadata event on the real inode.
+				now := time.Now()
+				_ = os.Chtimes(destPath, now, now)
 				fmt.Printf("%s %s\n", ui.InArrow("←"), relPath)
 			}
 		}()
