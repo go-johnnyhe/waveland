@@ -31,7 +31,7 @@
   --font-mono: 'JetBrains Mono', monospace;
   --max-w: 1180px;
   --narrow-w: 960px;
-  --gap: 8rem;
+  --gap: 12rem;
 }
 
 html {
@@ -62,7 +62,7 @@ body::before {
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 0, 0, 0.6), transparent 70%);
-  opacity: 0.6;
+  opacity: 0.15;
 }
 
 a {
@@ -240,14 +240,14 @@ code {
 }
 
 @media (max-width: 768px) {
-  :root { --gap: 5.4rem; }
+  :root { --gap: 8rem; }
 
   section {
     padding: 0 1.15rem;
   }
 
   body::before {
-    opacity: 0.4;
+    opacity: 0.1;
     background-size: 44px 44px;
   }
 

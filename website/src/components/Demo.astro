@@ -11,21 +11,6 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
       <p class="section-lead">
         Shadow syncs the filesystem itself. Hosts stay in their editor. Joiners stay in theirs.
       </p>
-
-      <div class="demo-notes">
-        <article>
-          <span>Starts fast</span>
-          <p>One install command, then `shadow start .` or the VS Code sidebar.</p>
-        </article>
-        <article>
-          <span>Shares cleanly</span>
-          <p>Join command copied to your clipboard — no manual URL work.</p>
-        </article>
-        <article>
-          <span>Stays private</span>
-          <p>The E2E key stays in the URL fragment, which never gets sent to the relay.</p>
-        </article>
-      </div>
     </div>
 
     <div class="demo-stage reveal r-d1" data-demo-root>
@@ -70,10 +55,23 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
   }
 
   .demo-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 2rem;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .demo-copy {
+    text-align: center;
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 48rem;
+  }
+
+  .demo-stage {
+    width: 100%;
+    max-width: 64rem;
   }
 
   .demo-window {
@@ -81,7 +79,7 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
     border: 1px solid var(--border);
     border-radius: 1rem;
     overflow: hidden;
-    box-shadow: var(--shadow-xl), 0 0 60px rgba(34, 211, 170, 0.06);
+    box-shadow: var(--shadow-xl), 0 0 80px rgba(34, 211, 170, 0.08);
   }
 
   .window-chrome {
@@ -121,59 +119,29 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
     display: block;
   }
 
-  .demo-notes {
-    display: grid;
-    gap: 0.9rem;
-    margin-top: 2rem;
-  }
-
-  .demo-notes article,
-  .demo-footer {
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background: var(--paper);
-    backdrop-filter: blur(12px);
-  }
-
-  .demo-notes article {
-    padding: 1rem 1.05rem;
-  }
-
-  .demo-notes span {
-    display: block;
-    font-weight: 700;
-    margin-bottom: 0.32rem;
-  }
-
-  .demo-notes p,
-  .demo-footer p {
-    color: var(--text-secondary);
-  }
-
   .demo-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     padding: 1rem 1.1rem;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--paper);
+    backdrop-filter: blur(12px);
   }
 
   .demo-footer p {
-    max-width: 22rem;
+    color: var(--text-secondary);
     font-size: 0.95rem;
-  }
-
-  @media (max-width: 960px) {
-    .demo-inner {
-      grid-template-columns: 1fr;
-    }
   }
 
   @media (max-width: 640px) {
     .demo-footer {
       flex-direction: column;
       align-items: stretch;
+      text-align: center;
     }
   }
 </style>

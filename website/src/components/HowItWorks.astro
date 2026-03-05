@@ -1,0 +1,104 @@
+---
+---
+
+<section class="how-it-works">
+  <div class="section-shell how-inner">
+    <div class="how-header reveal">
+      <p class="section-kicker">How it works</p>
+      <h2 class="section-title">Zero setup. Pure flow.</h2>
+      <p class="section-lead">
+        No accounts, no new editors to learn. Just start a session and share the link.
+      </p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step reveal r-d1">
+        <div class="step-num">01</div>
+        <h3>Start in your surface</h3>
+        <p>Run `shadow start .` from the CLI or launch a session directly from the VS Code sidebar.</p>
+      </div>
+
+      <div class="step reveal r-d2">
+        <div class="step-num">02</div>
+        <h3>Shadow copies the key</h3>
+        <p>The join command includes the E2E key, making it long by design. Shadow automatically handles the copy step.</p>
+        <div class="code-block">
+          <code>shadow join 'https://...#e2e-key'</code>
+        </div>
+      </div>
+
+      <div class="step reveal r-d3">
+        <div class="step-num">03</div>
+        <h3>Both sides edit live</h3>
+        <p>Not a screen share. Not editor lock-in. It's the same project updating in real time for everyone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .how-it-works {
+    margin-bottom: var(--gap);
+  }
+
+  .how-header {
+    text-align: center;
+    margin-bottom: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3rem;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+
+  .step p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .code-block {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--paper-strong);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .code-block code {
+    font-size: 0.8rem;
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  @media (max-width: 900px) {
+    .steps-grid {
+      grid-template-columns: 1fr;
+      gap: 4rem;
+    }
+  }
+</style>

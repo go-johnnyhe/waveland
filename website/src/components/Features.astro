@@ -11,7 +11,7 @@ const features = [
     desc: 'It carries the E2E key in the URL fragment. That is why it looks long, and why the relay never gets the secret.',
   },
   {
-    title: 'The workflow still feels one-click',
+    title: 'The workflow feels native',
     desc: 'Hosts get the full join command copied automatically, and the VS Code extension keeps the session controls visible.',
   },
 ];
@@ -28,43 +28,40 @@ const features = [
       </p>
     </div>
 
-    <div class="path-grid">
-      <article class="path-card cli reveal r-d1">
+    <div class="bento-grid">
+      <article class="bento-card cli reveal r-d1">
         <span class="path-label">For any editor</span>
         <h3>CLI install</h3>
         <p>
           Best when you want the fastest path to a live session. Install once, run `shadow`, and
           keep using the editor you already love.
         </p>
-        <code>{installCmd}</code>
-        <button
-          type="button"
-          class="primary-button"
-          data-cta
-          data-cta-source="install_paths"
-          data-cta-target="cli"
-          data-cta-surface="website"
-          data-copy-text={installCmd}
-          data-copy-source="install_paths"
-          data-copy-target="cli"
-          data-copy-surface="website"
-        >
-          <span data-copy-label>Copy install command</span>
-        </button>
+        <div class="code-wrap">
+          <code>{installCmd}</code>
+          <button
+            type="button"
+            class="primary-button"
+            data-cta
+            data-cta-source="install_paths"
+            data-cta-target="cli"
+            data-cta-surface="website"
+            data-copy-text={installCmd}
+            data-copy-source="install_paths"
+            data-copy-target="cli"
+            data-copy-surface="website"
+          >
+            <span data-copy-label>Copy</span>
+          </button>
+        </div>
       </article>
 
-      <article class="path-card vscode reveal r-d2">
+      <article class="bento-card vscode reveal r-d2">
         <span class="path-label">For VS Code users</span>
         <h3>Extension install</h3>
         <p>
           Start, join, retry, and copy the share command from the Activity Bar. Great for teammates
           who want the product to feel native immediately.
         </p>
-        <ul>
-          <li>One-click start and join</li>
-          <li>Copied join command ready to share</li>
-          <li>Live status, errors, and logs in-editor</li>
-        </ul>
         <a
           href={marketplaceUrl}
           class="ghost-button"
@@ -78,11 +75,9 @@ const features = [
           Open VS Code Marketplace
         </a>
       </article>
-    </div>
 
-    <div class="feature-list">
       {features.map((f, i) => (
-        <article class={`feature reveal r-d${i + 1}`}>
+        <article class={`bento-feature reveal r-d${i + 1}`}>
           <h3 class="feature-title">{f.title}</h3>
           <p class="feature-desc">{f.desc}</p>
         </article>
@@ -97,132 +92,116 @@ const features = [
   }
 
   .feature-intro {
-    margin-bottom: 2.2rem;
+    text-align: center;
+    margin-bottom: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .path-grid {
+  .bento-grid {
     display: grid;
-    grid-template-columns: 1.15fr 0.95fr;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
   }
 
-  .path-card,
-  .feature {
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background: var(--paper);
-    backdrop-filter: blur(14px);
+  .bento-card,
+  .bento-feature {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 1.5rem;
+    padding: 3rem;
   }
 
-  .path-card {
+  .bento-card {
+    grid-column: span 2;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 1.5rem;
-    min-height: 100%;
   }
 
-  .path-card h3 {
-    font-size: 1.55rem;
+  .vscode {
+    grid-column: span 1;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
+  }
+
+  .cli {
+    background: linear-gradient(135deg, rgba(34, 211, 170, 0.05), rgba(255, 255, 255, 0.02));
+  }
+
+  .bento-feature {
+    grid-column: span 1;
+    padding: 2.5rem;
+  }
+
+  .bento-card h3 {
+    font-size: 2rem;
     font-family: var(--font-display);
-    line-height: 1.08;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    color: var(--text);
   }
 
-  .path-card p,
-  .path-card li {
+  .bento-card p {
     color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 28rem;
   }
 
-  .path-card code {
-    display: block;
+  .code-wrap {
+    display: flex;
+    gap: 1rem;
     width: 100%;
-    padding: 0.95rem 1rem;
+    max-width: 32rem;
+  }
+
+  .code-wrap code {
+    flex: 1;
+    padding: 0.95rem 1.25rem;
     border-radius: 0.5rem;
     background: var(--paper-strong);
-    border: 1px solid var(--border);
-    font-size: 0.78rem;
-    line-height: 1.65;
-    word-break: break-all;
-  }
-
-  .path-card ul {
-    list-style: none;
-    display: grid;
-    gap: 0.65rem;
-  }
-
-  .path-card li {
-    position: relative;
-    padding-left: 1rem;
-  }
-
-  .path-card li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.62rem;
-    width: 0.4rem;
-    height: 0.4rem;
-    border-radius: 999px;
-    background: var(--accent);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    color: var(--text);
   }
 
   .path-label {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.15em;
     color: var(--accent);
-  }
-
-  .cli {
-    background: linear-gradient(160deg, var(--paper) 0%, var(--bg-elevated) 100%);
-    border-color: var(--border);
-  }
-
-  .vscode {
-    background: var(--bg-elevated);
-    border-color: var(--border-strong);
-  }
-
-  .vscode p,
-  .vscode li {
-    color: var(--text-secondary);
-  }
-
-  .feature-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .feature {
-    padding: 1.35rem;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-  }
-
-  .feature:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-strong);
+    margin-bottom: 1rem;
+    display: block;
   }
 
   .feature-title {
-    font-size: 1.12rem;
-    margin-bottom: 0.6rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text);
   }
 
   .feature-desc {
-    font-size: 0.94rem;
+    font-size: 1rem;
     color: var(--text-secondary);
-    line-height: 1.65;
+    line-height: 1.6;
   }
 
-  @media (max-width: 900px) {
-    .path-grid,
-    .feature-list {
+  @media (max-width: 960px) {
+    .bento-grid {
       grid-template-columns: 1fr;
+    }
+    
+    .bento-card, .bento-feature {
+      grid-column: span 1;
+      padding: 2rem;
+    }
+
+    .code-wrap {
+      flex-direction: column;
     }
   }
 </style>
