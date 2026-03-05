@@ -1,4 +1,5 @@
 cloudflared
+/shadow
 *.py
 *.pyc
 .DS_Store
@@ -9,3 +10,9 @@ cloudflared
 website/node_modules/
 website/dist/
 website/.astro/
+
+# VS Code extension local artifacts
+vscode-extension/node_modules/
+vscode-extension/out/
+vscode-extension/*.vsix
+vscode-extension/*.tgz

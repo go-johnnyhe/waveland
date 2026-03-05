@@ -1,32 +1,90 @@
 ---
+import { installCmd, marketplaceUrl } from '../consts';
+
 const features = [
   {
-    title: 'E2E Encrypted',
-    desc: 'AES-256-GCM. The server is a dumb relay that never sees your code. The encryption key lives in the URL fragment — never sent over the wire.',
+    title: 'Any editor under the hood',
+    desc: 'Shadow syncs the project itself, so one person can stay in Vim while the other joins from VS Code or JetBrains.',
   },
   {
-    title: 'Any Editor',
-    desc: 'Shadow syncs at the filesystem level. VS Code, Vim, Neovim, Zed, JetBrains, Emacs — if it reads files, it works.',
+    title: 'The long link is doing real work',
+    desc: 'It carries the E2E key in the URL fragment. That is why it looks long, and why the relay never gets the secret.',
   },
   {
-    title: 'Zero Setup',
-    desc: 'One curl to install. Run shadow and the wizard handles the rest. No accounts, no config files, no extensions to hunt down.',
+    title: 'The workflow still feels one-click',
+    desc: 'Hosts get the full join command copied automatically, and the VS Code extension keeps the session controls visible.',
   },
 ];
 ---
 
 <section class="features">
-  <div class="features-inner">
-    <h2 class="heading reveal">Built for developers</h2>
+  <div class="section-shell features-inner">
+    <div class="feature-intro reveal">
+      <p class="section-kicker">Choose your surface</p>
+      <h2 class="section-title">Same Shadow session. Two launch-ready ways in.</h2>
+      <p class="section-lead">
+        Lead with the path that matches the person in front of you. CLI for zero ceremony.
+        VS Code for people who want a native panel and fewer terminal steps.
+      </p>
+    </div>
+
+    <div class="path-grid">
+      <article class="path-card cli reveal r-d1">
+        <span class="path-label">For any editor</span>
+        <h3>CLI install</h3>
+        <p>
+          Best when you want the fastest path to a live session. Install once, run `shadow`, and
+          keep using the editor you already love.
+        </p>
+        <code>{installCmd}</code>
+        <button
+          type="button"
+          class="primary-button"
+          data-cta
+          data-cta-source="install_paths"
+          data-cta-target="cli"
+          data-cta-surface="website"
+          data-copy-text={installCmd}
+          data-copy-source="install_paths"
+          data-copy-target="cli"
+          data-copy-surface="website"
+        >
+          <span data-copy-label>Copy CLI install</span>
+        </button>
+      </article>
+
+      <article class="path-card vscode reveal r-d2">
+        <span class="path-label">For VS Code users</span>
+        <h3>Extension install</h3>
+        <p>
+          Start, join, retry, and copy the share command from the Activity Bar. Great for teammates
+          who want the product to feel native immediately.
+        </p>
+        <ul>
+          <li>One-click start and join</li>
+          <li>Copied join command ready to share</li>
+          <li>Live status, errors, and logs in-editor</li>
+        </ul>
+        <a
+          href={marketplaceUrl}
+          class="ghost-button"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta
+          data-cta-source="install_paths"
+          data-cta-target="vscode_marketplace"
+          data-cta-surface="website"
+        >
+          Open VS Code Marketplace
+        </a>
+      </article>
+    </div>
 
     <div class="feature-list">
       {features.map((f, i) => (
         <article class={`feature reveal r-d${i + 1}`}>
-          <div class="feature-num">{String(i + 1).padStart(2, '0')}</div>
-          <div class="feature-body">
-            <h3 class="feature-title">{f.title}</h3>
-            <p class="feature-desc">{f.desc}</p>
-          </div>
+          <h3 class="feature-title">{f.title}</h3>
+          <p class="feature-desc">{f.desc}</p>
         </article>
       ))}
     </div>
@@ -38,80 +96,137 @@ const features = [
     margin-bottom: var(--gap);
   }
 
-  .features-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
+  .feature-intro {
+    margin-bottom: 2.2rem;
   }
 
-  .heading {
-    font-family: var(--font-serif);
-    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-    font-weight: 400;
-    letter-spacing: -0.015em;
-    margin-bottom: 3rem;
-    text-align: center;
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .path-card,
+  .feature {
+    border: 1px solid var(--border);
+    border-radius: 1.4rem;
+    background: var(--paper);
+    backdrop-filter: blur(14px);
+  }
+
+  .path-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    min-height: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .path-card h3 {
+    font-size: 1.55rem;
+    font-family: var(--font-display);
+    line-height: 1.08;
+  }
+
+  .path-card p,
+  .path-card li {
+    color: var(--text-secondary);
+  }
+
+  .path-card code {
+    display: block;
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border-radius: 1rem;
+    background: rgba(17, 19, 23, 0.06);
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+    line-height: 1.65;
+    word-break: break-all;
+  }
+
+  .path-card ul {
+    list-style: none;
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .path-card li {
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .path-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: var(--signal);
+  }
+
+  .path-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  .cli {
+    background:
+      linear-gradient(180deg, rgba(255, 248, 240, 0.88), rgba(255, 248, 240, 0.74)),
+      linear-gradient(140deg, rgba(207, 94, 28, 0.08), transparent 42%);
+  }
+
+  .vscode {
+    background:
+      linear-gradient(180deg, rgba(18, 22, 29, 0.96), rgba(24, 29, 40, 0.96));
+    border-color: rgba(248, 241, 232, 0.12);
+    color: #f8f1e8;
+  }
+
+  .vscode p,
+  .vscode li {
+    color: rgba(248, 241, 232, 0.76);
   }
 
   .feature-list {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    background: #fff;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
   }
 
   .feature {
-    padding: 2.25rem 2rem;
-    border-left: 1px solid var(--border);
-    transition: background 0.3s;
-  }
-
-  .feature:first-child {
-    border-left: none;
+    padding: 1.35rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
   }
 
   .feature:hover {
-    background: var(--bg-warm);
-  }
-
-  .feature-num {
-    font-family: var(--font-serif);
-    font-size: 2rem;
-    color: var(--border-strong);
-    line-height: 1;
-    margin-bottom: 1.5rem;
-    font-style: italic;
-    transition: color 0.3s;
-  }
-
-  .feature:hover .feature-num {
-    color: var(--accent);
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
   }
 
   .feature-title {
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 1.12rem;
     margin-bottom: 0.6rem;
   }
 
   .feature-desc {
-    font-size: 0.88rem;
+    font-size: 0.94rem;
     color: var(--text-secondary);
     line-height: 1.65;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
+    .path-grid,
     .feature-list {
       grid-template-columns: 1fr;
     }
-    .feature {
-      border-left: none;
-      border-top: 1px solid var(--border);
-    }
-    .feature:first-child { border-top: none; }
   }
 </style>

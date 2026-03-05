@@ -27,11 +27,13 @@ type StartOptions struct {
 	E2EKey          string
 	ReadOnlyJoiners bool
 	Force           bool
+	JSONMode        bool
 }
 
 type JoinOptions struct {
 	SessionURL string
 	E2EKey     string
+	JSONMode   bool
 }
 
 func runStart(opts StartOptions) error {
@@ -47,16 +49,22 @@ func runStart(opts StartOptions) error {
 		opts.E2EKey = generatedKey
 	}
 
+	if opts.JSONMode {
+		emitJSON(JSONEvent{Event: EventStarting, Message: "Starting session"})
+	}
+
 	if stat, err := os.Stat(opts.Path); os.IsNotExist(err) {
 		f, createErr := os.Create(opts.Path)
 		if createErr != nil {
 			return fmt.Errorf("failed to create %s: %w", opts.Path, createErr)
 		}
 		f.Close()
-		fmt.Printf("Created %s (empty file)\n", opts.Path)
+		if !opts.JSONMode {
+			fmt.Printf("Created %s (empty file)\n", opts.Path)
+		}
 	} else if err != nil {
 		return fmt.Errorf("error checking %s: %w", opts.Path, err)
-	} else if stat.IsDir() && opts.Path != "." {
+	} else if stat.IsDir() && opts.Path != "." && !opts.JSONMode {
 		fmt.Printf("Sharing directory: %s\n", opts.Path)
 	}
 
@@ -84,7 +92,8 @@ func runStart(opts StartOptions) error {
 		if err != nil {
 			return fmt.Errorf("failed to inspect share directory: %w", err)
 		}
-		if shouldPromptLargeShare(estimate, opts.Force) {
+		// In JSON mode, skip interactive prompt (extension handles UI).
+		if !opts.JSONMode && shouldPromptLargeShare(estimate, opts.Force) {
 			confirmed, err := promptLargeShareConfirmation(os.Stdin, os.Stdout, estimate)
 			if err != nil {
 				return err
@@ -100,7 +109,11 @@ func runStart(opts StartOptions) error {
 		return fmt.Errorf("failed to find available port: %w", err)
 	}
 	if actualPort != opts.Port {
-		fmt.Printf("Port %d was in use, using port %d instead\n", opts.Port, actualPort)
+		if opts.JSONMode {
+			emitJSON(JSONEvent{Event: EventWarning, Message: fmt.Sprintf("Port %d in use, using %d", opts.Port, actualPort)})
+		} else {
+			fmt.Printf("Port %d was in use, using port %d instead\n", opts.Port, actualPort)
+		}
 	}
 
 	server.SetReadOnlyJoiners(opts.ReadOnlyJoiners)
@@ -113,31 +126,40 @@ func runStart(opts StartOptions) error {
 	srv := &http.Server{Handler: mux}
 	go func() {
 		if serveErr := srv.Serve(listener); serveErr != http.ErrServerClosed {
-			fmt.Printf("Server failed: %v\n", serveErr)
+			if opts.JSONMode {
+				emitJSONError(fmt.Sprintf("Server failed: %v", serveErr))
+			} else {
+				fmt.Printf("Server failed: %v\n", serveErr)
+			}
 			os.Exit(1)
 		}
 	}()
 
 	time.Sleep(1 * time.Second)
 
+	// Spinner — skip in JSON mode.
 	spinDone := make(chan struct{})
 	spinExited := make(chan struct{})
-	go func() {
-		defer close(spinExited)
-		frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
-		i := 0
-		for {
-			select {
-			case <-spinDone:
-				fmt.Printf("\r\033[K")
-				return
-			default:
-				fmt.Printf("\r  %s %s", frames[i%len(frames)], ui.Dim("casting shadow..."))
-				i++
-				time.Sleep(80 * time.Millisecond)
+	if opts.JSONMode {
+		close(spinExited)
+	} else {
+		go func() {
+			defer close(spinExited)
+			frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+			i := 0
+			for {
+				select {
+				case <-spinDone:
+					fmt.Printf("\r\033[K")
+					return
+				default:
+					fmt.Printf("\r  %s %s", frames[i%len(frames)], ui.Dim("casting shadow..."))
+					i++
+					time.Sleep(80 * time.Millisecond)
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	tunnelURL, err := tunnel.StartCloudflaredTunnel(ctx, actualPort)
 	close(spinDone)
@@ -150,23 +172,35 @@ func runStart(opts StartOptions) error {
 		return err
 	}
 
-	displayPath := opts.Path
-	if displayPath == "." {
-		displayPath = filepath.Base(absSharePath)
+	joinCmdStr := fmt.Sprintf("shadow join '%s'", shareJoinURL)
+
+	if opts.JSONMode {
+		emitJSON(JSONEvent{
+			Event:       "tunnel_ready",
+			Message:     "Tunnel ready",
+			JoinURL:     shareJoinURL,
+			JoinCommand: joinCmdStr,
+		})
+	} else {
+		displayPath := opts.Path
+		if displayPath == "." {
+			displayPath = filepath.Base(absSharePath)
+		}
+		fmt.Printf("\n  %s %s\n\n", ui.Accent("◗ shadow"), ui.Dim("— sharing "+displayPath))
+		fmt.Printf("  %s\n", ui.Dim("tell your partner to run this:"))
+		fmt.Printf("  %s", ui.Bold(joinCmdStr))
+		if ui.CopyToClipboard(joinCmdStr) {
+			fmt.Printf("  %s", ui.Bold("✓ copied to clipboard"))
+		}
+		fmt.Print("\n\n")
+		footer := "encrypted end-to-end · ctrl+c to stop"
+		if opts.ReadOnlyJoiners {
+			footer += " · joiners are read-only"
+		}
+		fmt.Printf("  %s\n", ui.Accent(footer))
 	}
-	fmt.Printf("\n  %s %s\n\n", ui.Accent("◗ shadow"), ui.Dim("— sharing "+displayPath))
-	joinCmd := fmt.Sprintf("shadow join '%s'", shareJoinURL)
-	fmt.Printf("  %s\n", ui.Dim("tell your partner to run this:"))
-	fmt.Printf("  %s", ui.Bold(joinCmd))
-	if ui.CopyToClipboard(joinCmd) {
-		fmt.Printf("  %s", ui.Bold("✓ copied to clipboard"))
-	}
-	fmt.Print("\n\n")
-	footer := "encrypted end-to-end · ctrl+c to stop"
-	if opts.ReadOnlyJoiners {
-		footer += " · joiners are read-only"
-	}
-	fmt.Printf("  %s\n", ui.Accent(footer))
+
+	clientOnEvent := jsonOnEvent(opts.JSONMode)
 
 	var sessionFileCount atomic.Int64
 	sessionStart := time.Now()
@@ -175,7 +209,11 @@ func runStart(opts StartOptions) error {
 		time.Sleep(500 * time.Millisecond)
 		conn, _, dialErr := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://localhost:%d/ws", port), nil)
 		if dialErr != nil {
-			fmt.Println("Error connecting to websocket:", dialErr)
+			if opts.JSONMode {
+				emitJSONError(fmt.Sprintf("Local connection failed: %v", dialErr))
+			} else {
+				fmt.Println("Error connecting to websocket:", dialErr)
+			}
 			return
 		}
 		defer conn.Close()
@@ -185,18 +223,31 @@ func runStart(opts StartOptions) error {
 			E2EKey:     opts.E2EKey,
 			BaseDir:    shareBaseDir,
 			SingleFile: shareSingleFile,
+			OnEvent:    clientOnEvent,
 		})
 		if clientErr != nil {
-			fmt.Println("Error initializing E2E client:", clientErr)
+			if opts.JSONMode {
+				emitJSONError(fmt.Sprintf("E2E init failed: %v", clientErr))
+			} else {
+				fmt.Println("Error initializing E2E client:", clientErr)
+			}
 			return
 		}
 		c.Start(runCtx)
 		count, snapshotErr := c.SendInitialSnapshot()
 		if snapshotErr != nil {
-			fmt.Println("Error sending initial snapshot:", snapshotErr)
+			if opts.JSONMode {
+				emitJSONError(fmt.Sprintf("Snapshot failed: %v", snapshotErr))
+			} else {
+				fmt.Println("Error sending initial snapshot:", snapshotErr)
+			}
 		} else if count > 0 {
-			fmt.Printf("%s\n", ui.Dim(fmt.Sprintf("ready · %d files", count)))
 			sessionFileCount.Add(int64(count))
+			if opts.JSONMode {
+				emitJSON(JSONEvent{Event: EventSnapshotComplete, Message: fmt.Sprintf("%d files", count), FileCount: count})
+			} else {
+				fmt.Printf("%s\n", ui.Dim(fmt.Sprintf("ready · %d files", count)))
+			}
 		}
 		<-runCtx.Done()
 	}(ctx, actualPort)
@@ -205,7 +256,11 @@ func runStart(opts StartOptions) error {
 	srv.Shutdown(context.Background())
 	time.Sleep(100 * time.Millisecond)
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
-	fmt.Printf("\n  %s\n", ui.Dim(fmt.Sprintf("done. %d files synced, %s", sessionFileCount.Load(), formatDuration(elapsed))))
+	if opts.JSONMode {
+		emitJSON(JSONEvent{Event: EventStopped, Message: fmt.Sprintf("Session stopped after %s", formatDuration(elapsed))})
+	} else {
+		fmt.Printf("\n  %s\n", ui.Dim(fmt.Sprintf("done. %d files synced, %s", sessionFileCount.Load(), formatDuration(elapsed))))
+	}
 	return nil
 }
 
@@ -225,20 +280,36 @@ func runJoin(opts JoinOptions) error {
 		return fmt.Errorf("missing E2E key (use URL fragment like #<key> or pass --key)")
 	}
 
+	if opts.JSONMode {
+		emitJSON(JSONEvent{Event: EventStarting, Message: "Connecting to session"})
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	fmt.Printf("\n  %s", ui.Dim("connecting..."))
+	if !opts.JSONMode {
+		fmt.Printf("\n  %s", ui.Dim("connecting..."))
+	}
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err != nil {
-		fmt.Println()
+		if !opts.JSONMode {
+			fmt.Println()
+		}
 		return fmt.Errorf("error making connection: %w", err)
 	}
 	defer conn.Close()
-	fmt.Printf("\r\033[K  %s\n\n", ui.Dim("connected · syncing files"))
+
+	if opts.JSONMode {
+		emitJSON(JSONEvent{Event: EventConnected, Message: "Connected to session"})
+	} else {
+		fmt.Printf("\r\033[K  %s\n\n", ui.Dim("connected · syncing files"))
+	}
+
+	clientOnEvent := jsonOnEvent(opts.JSONMode)
 
 	c, err := client.NewClient(conn, client.Options{
-		E2EKey: joinKey,
+		E2EKey:  joinKey,
+		OnEvent: clientOnEvent,
 	})
 	if err != nil {
 		return fmt.Errorf("error initializing E2E client: %w", err)
@@ -248,7 +319,11 @@ func runJoin(opts JoinOptions) error {
 
 	<-ctx.Done()
 	elapsed := time.Since(sessionStart).Truncate(time.Second)
-	fmt.Printf("\n  %s\n", ui.Dim(fmt.Sprintf("done. %s", formatDuration(elapsed))))
+	if opts.JSONMode {
+		emitJSON(JSONEvent{Event: EventStopped, Message: fmt.Sprintf("Session ended after %s", formatDuration(elapsed))})
+	} else {
+		fmt.Printf("\n  %s\n", ui.Dim(fmt.Sprintf("done. %s", formatDuration(elapsed))))
+	}
 	return nil
 }
 

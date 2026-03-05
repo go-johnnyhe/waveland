@@ -17,6 +17,10 @@ or install with Go:
 go install github.com/go-johnnyhe/shadow@latest
 ```
 
+Or install the VS Code extension:
+
+[Shadow on the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=go-johnnyhe77.shadow-vscode)
+
 ## Quick Start
 
 ```bash
@@ -34,6 +38,9 @@ shadow start .
 # Partner — join with the generated URL
 shadow join 'https://abc123.trycloudflare.com#<key>'
 ```
+
+When a host session comes online, Shadow copies the full join command to the clipboard for you.
+The VS Code extension follows the same flow from the Activity Bar.
 
 ## How Is This Different?
 
@@ -58,15 +65,18 @@ You (any editor)              Your partner (any editor)
 ```
 
 1. Run `shadow start .` in your project directory
-2. Share the generated URL with your partner
-3. They run `shadow join '<url>'`
-4. Both of you see live changes — `->` outgoing, `<-` incoming
+2. Shadow copies the join command for you
+3. Share that command with your partner
+4. They run `shadow join '<url>'`
+5. Both of you see live changes — `->` outgoing, `<-` incoming
 
 Files are **end-to-end encrypted**. The server is a dumb relay that never sees your code. The encryption key lives in the URL fragment (`#<key>`) which is never sent to the server.
 
 ## Editor Support
 
 Shadow works at the filesystem level, so it works with **any editor** — VS Code, Vim, Neovim, JetBrains, Zed, whatever you use.
+
+If you want a native GUI for start/join/status inside VS Code, install the Marketplace extension and use the same Shadow CLI-powered sessions there.
 
 ## Options
 

@@ -1,16 +1,23 @@
 ---
 const rows = [
-  { label: 'Editor lock-in', shadow: 'None', liveshare: 'VS Code only', screen: 'None' },
-  { label: 'Latency', shadow: 'Low (WebSocket)', liveshare: 'Low', screen: 'High' },
-  { label: 'Both can edit', shadow: 'Yes', liveshare: 'Yes', screen: 'No' },
-  { label: 'Setup required', shadow: 'Zero', liveshare: 'Extension install', screen: 'None' },
-  { label: 'Encryption', shadow: 'E2E (AES-256)', liveshare: 'Microsoft servers', screen: 'Varies' },
+  { label: 'Editor freedom', shadow: 'CLI or VS Code, any editor underneath', liveshare: 'VS Code only', screen: 'Any editor, but view-only for others' },
+  { label: 'Share step', shadow: 'Host copies the join command once', liveshare: 'Invite from VS Code', screen: 'Send a meeting link' },
+  { label: 'Both people can edit', shadow: 'Yes', liveshare: 'Yes', screen: 'No' },
+  { label: 'Latency', shadow: 'Live filesystem sync over WebSocket', liveshare: 'Low', screen: 'High' },
+  { label: 'Encryption model', shadow: 'E2E key lives in the URL fragment', liveshare: 'Microsoft relay', screen: 'Depends on the call tool' },
 ];
 ---
 
 <section class="comparison">
-  <div class="comparison-inner">
-    <h2 class="heading reveal">How is this different?</h2>
+  <div class="section-shell comparison-inner">
+    <div class="comparison-copy reveal">
+      <p class="section-kicker">Why this wins</p>
+      <h2 class="section-title">Better than screensharing when you actually need to ship.</h2>
+      <p class="section-lead">
+        Shadow is for moments when one person should not have to drive and the other should not
+        have to switch editors. That is the gap between “collaboration” and “watching someone else type.”
+      </p>
+    </div>
 
     <div class="table-wrap reveal r-d1">
       <table>
@@ -42,35 +49,25 @@ const rows = [
     margin-bottom: var(--gap);
   }
 
-  .comparison-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
-  }
-
-  .heading {
-    font-family: var(--font-serif);
-    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-    font-weight: 400;
-    letter-spacing: -0.015em;
-    margin-bottom: 2.5rem;
-    text-align: center;
+  .comparison-copy {
+    margin-bottom: 2rem;
   }
 
   .table-wrap {
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 1.5rem;
     overflow: hidden;
-    background: #fff;
+    background: var(--paper);
+    box-shadow: var(--shadow-lg);
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     min-width: 580px;
   }
 
-  /* Scroll on small screens */
   .table-wrap {
     overflow-x: auto;
   }
@@ -81,19 +78,20 @@ const rows = [
 
   th {
     text-align: left;
-    padding: 0.9rem 1.4rem;
+    padding: 1rem 1.2rem;
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 500;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
 
   td {
-    padding: 0.85rem 1.4rem;
+    padding: 1rem 1.2rem;
     border-top: 1px solid var(--border);
     color: var(--text-secondary);
+    vertical-align: top;
   }
 
   tbody tr:first-child td { border-top: none; }
@@ -102,7 +100,7 @@ const rows = [
     transition: background 0.2s;
   }
   tbody tr:hover {
-    background: var(--accent-soft);
+    background: rgba(255, 248, 240, 0.9);
   }
 
   .col-label {
@@ -116,7 +114,6 @@ const rows = [
     color: var(--text-muted);
   }
 
-  /* Shadow column — the star */
   th.col-shadow {
     color: var(--accent);
     font-weight: 600;
@@ -124,9 +121,9 @@ const rows = [
   }
 
   td.col-shadow {
-    color: var(--accent);
+    color: var(--text);
     font-weight: 500;
-    background: var(--accent-soft);
+    background: rgba(207, 94, 28, 0.08);
   }
 
   @media (max-width: 640px) {

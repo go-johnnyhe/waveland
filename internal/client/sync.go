@@ -53,6 +53,7 @@ type Client struct {
 	lastHash              sync.Map
 	readyCh               chan struct{}
 	readyOnce             sync.Once
+	onEvent               func(eventType, relPath, message string)
 }
 
 type Options struct {
@@ -60,6 +61,7 @@ type Options struct {
 	E2EKey     string
 	BaseDir    string
 	SingleFile string
+	OnEvent    func(eventType, relPath, message string)
 }
 
 func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
@@ -100,6 +102,7 @@ func NewClient(conn *websocket.Conn, opts ...Options) (*Client, error) {
 		isHost:         opt.IsHost,
 		readyCh:        make(chan struct{}),
 		fileTimers:     make(map[string]*time.Timer),
+		onEvent:        opt.OnEvent,
 	}
 	if c.isHost {
 		c.markReady()
@@ -220,7 +223,7 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 	if fileInfo.Size() > maxSyncedFileBytes {
 		if verbose {
 			sizeMB := float64(fileInfo.Size()) / (1024 * 1024)
-			fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped %s (%.0fMB, exceeds 10MB limit)", relPath, sizeMB)))
+			c.notifySkipped(relPath, sizeMB)
 		}
 		return false
 	}
@@ -252,7 +255,7 @@ func (c *Client) sendFile(filePath string, verbose bool) bool {
 	}
 
 	if verbose {
-		fmt.Printf("%s %s\n", ui.OutArrow("→"), relPath)
+		c.notifyFileSent(relPath, false)
 	}
 	return true
 }
@@ -283,7 +286,7 @@ func (c *Client) sendDelete(relPath string, verbose bool) bool {
 	c.dropPathHashes(relPath)
 
 	if verbose {
-		fmt.Printf("%s %s %s\n", ui.OutArrow("→"), relPath, ui.Dim("(deleted)"))
+		c.notifyFileSent(relPath, true)
 	}
 	return true
 }
@@ -293,11 +296,11 @@ func (c *Client) readLoop() {
 		_, msg, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseMessageTooBig) || strings.Contains(err.Error(), "read limit exceeded") {
-				fmt.Println(ui.Warn("⚠ incoming data exceeded transport limit"))
+				c.notifyWarning("⚠ incoming data exceeded transport limit")
 				return
 			}
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				fmt.Println(ui.Warn("⚠ connection lost"))
+				c.notifyWarning("⚠ connection lost")
 			}
 			return
 		}
@@ -313,20 +316,12 @@ func (c *Client) readLoop() {
 			if ok && !c.isHost {
 				c.readOnlyJoinerMode.Store(readOnly)
 				if readOnly {
-					fmt.Println(ui.Bold("read-only mode · local edits will not sync"))
+					c.notifyReadOnly()
 				}
 			}
 			if peerCount, ok := protocol.ParsePeerCountControl(parts[1]); ok {
-				// Subtract 1 because the server counts us as a client too.
-				// The host also connects as a local client, so peers = total - 1.
 				others := peerCount - 1
-				if others == 1 {
-					fmt.Println(ui.Dim("1 peer connected"))
-				} else if others > 1 {
-					fmt.Println(ui.Dim(fmt.Sprintf("%d peers connected", others)))
-				} else {
-					fmt.Println(ui.Dim("no peers connected"))
-				}
+				c.notifyPeerCount(others)
 			}
 			c.markReady()
 			continue
@@ -361,7 +356,7 @@ func (c *Client) readLoop() {
 			if err := os.RemoveAll(destPath); err != nil && !os.IsNotExist(err) {
 				log.Printf("error deleting %s: %v\n", relPath, err)
 			} else {
-				fmt.Printf("%s %s %s\n", ui.InArrow("←"), relPath, ui.Dim("(deleted)"))
+				c.notifyFileReceived(relPath, true)
 			}
 			c.dropPathHashes(relPath)
 			continue
@@ -372,7 +367,7 @@ func (c *Client) readLoop() {
 			var tooLarge incomingFileTooLargeError
 			if errors.As(err, &tooLarge) {
 				sizeMB := float64(tooLarge.size) / (1024 * 1024)
-				fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped incoming %s (%.0fMB, exceeds 10MB limit)", relPath, sizeMB)))
+				c.notifySkipped(relPath, sizeMB)
 				continue
 			}
 			log.Printf("error decoding content for %s: %v\n", relPath, err)
@@ -395,7 +390,7 @@ func (c *Client) readLoop() {
 				// metadata event on the real inode.
 				now := time.Now()
 				_ = os.Chtimes(destPath, now, now)
-				fmt.Printf("%s %s\n", ui.InArrow("←"), relPath)
+				c.notifyFileReceived(relPath, false)
 			}
 		}()
 		c.lastHash.Store(relPath, fileHash(decodedContent))
@@ -406,6 +401,77 @@ func (c *Client) markReady() {
 	c.readyOnce.Do(func() {
 		close(c.readyCh)
 	})
+}
+
+// Output helpers — route to onEvent callback when set, else print to stdout.
+
+func (c *Client) notifyFileSent(relPath string, deleted bool) {
+	if c.onEvent != nil {
+		c.onEvent("file_sent", relPath, relPath)
+		return
+	}
+	if deleted {
+		fmt.Printf("%s %s %s\n", ui.OutArrow("→"), relPath, ui.Dim("(deleted)"))
+	} else {
+		fmt.Printf("%s %s\n", ui.OutArrow("→"), relPath)
+	}
+}
+
+func (c *Client) notifyFileReceived(relPath string, deleted bool) {
+	if c.onEvent != nil {
+		c.onEvent("file_received", relPath, relPath)
+		return
+	}
+	if deleted {
+		fmt.Printf("%s %s %s\n", ui.InArrow("←"), relPath, ui.Dim("(deleted)"))
+	} else {
+		fmt.Printf("%s %s\n", ui.InArrow("←"), relPath)
+	}
+}
+
+func (c *Client) notifyReadOnly() {
+	if c.onEvent != nil {
+		c.onEvent("read_only", "", "Read-only mode active")
+		return
+	}
+	fmt.Println(ui.Bold("read-only mode · local edits will not sync"))
+}
+
+func (c *Client) notifyPeerCount(others int) {
+	if c.onEvent != nil {
+		c.onEvent("peer_count", "", fmt.Sprintf("%d", others))
+		return
+	}
+	if others == 1 {
+		fmt.Println(ui.Dim("1 peer connected"))
+	} else if others > 1 {
+		fmt.Println(ui.Dim(fmt.Sprintf("%d peers connected", others)))
+	} else {
+		fmt.Println(ui.Dim("no peers connected"))
+	}
+}
+
+func (c *Client) notifyWarning(msg string) {
+	if c.onEvent != nil {
+		c.onEvent("warning", "", msg)
+		return
+	}
+	fmt.Println(ui.Warn(msg))
+}
+
+func (c *Client) notifySkipped(relPath string, sizeMB float64) {
+	if c.onEvent != nil {
+		c.onEvent("warning", relPath, fmt.Sprintf("skipped (%.0fMB, exceeds 10MB limit)", sizeMB))
+		return
+	}
+	fmt.Println(ui.Dim(fmt.Sprintf("⊘ skipped %s (%.0fMB, exceeds 10MB limit)", relPath, sizeMB)))
+}
+
+func (c *Client) notifyInfo(msg string) {
+	if c.onEvent != nil {
+		return
+	}
+	fmt.Println(ui.Dim(msg))
 }
 
 func (c *Client) monitorFiles(ctx context.Context) {
@@ -423,6 +489,10 @@ func (c *Client) monitorFiles(ctx context.Context) {
 	go c.processFileEvents(ctx, watcher)
 
 	if err := c.addWatchRecursive(watcher, c.baseDir); err != nil {
+		if c.onEvent != nil {
+			c.onEvent("error", "", "Cannot watch directory (filesystem issue)")
+			return
+		}
 		fmt.Println("\nCannot watch this directory (filesystem issue)")
 		fmt.Println("\nQuick fix, run these commands:")
 		fmt.Println("  $ mkdir -p /tmp/shadow && cd /tmp/shadow")
@@ -431,7 +501,7 @@ func (c *Client) monitorFiles(ctx context.Context) {
 		os.Exit(1)
 	}
 
-	fmt.Println(ui.Dim("watching for changes..."))
+	c.notifyInfo("watching for changes...")
 }
 
 func (c *Client) addWatchRecursive(watcher *fsnotify.Watcher, root string) error {

@@ -1,190 +1,305 @@
 ---
-const installCmd = 'curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh';
+import { installCmd, marketplaceUrl } from '../consts';
 ---
 
 <section class="hero">
-  <div class="hero-inner">
-    <p class="hero-label reveal">Real-time collaboration for any editor</p>
+  <div class="section-shell hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow-chip reveal">Encrypted sessions that feel immediate</span>
+      <p class="hero-label reveal r-d1">Pair live without making everyone switch editors.</p>
 
-    <h1 class="hero-title reveal r-d1">
-      Like Google Docs,<br />
-      but for your <em>codebase.</em>
-    </h1>
+      <h1 class="hero-title reveal r-d2">
+        Share once.<br />
+        Pair in <em>your own tools.</em>
+      </h1>
 
-    <p class="hero-desc reveal r-d2">
-      End-to-end encrypted file sync that works with every editor.
-      No accounts, no extensions, no config. Just code together.
-    </p>
+      <p class="hero-desc reveal r-d3">
+        Shadow gives you real-time coding across the CLI and VS Code, with end-to-end
+        encryption, no accounts, and no editor lock-in. Start the session, send the copied
+        join command, and keep moving.
+      </p>
 
-    <div class="hero-terminal reveal r-d3">
-      <div class="term-chrome">
-        <span class="term-title">Terminal</span>
-      </div>
-      <div class="term-body">
-        <span class="term-prompt">$</span>
-        <code class="term-cmd" id="hero-cmd">{installCmd}</code>
-        <button class="term-copy" id="hero-copy" aria-label="Copy install command">
-          <svg class="ico-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          <svg class="ico-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="hero-actions reveal r-d4">
+        <button
+          type="button"
+          class="primary-button"
+          data-cta
+          data-cta-source="hero"
+          data-cta-target="cli"
+          data-cta-surface="website"
+          data-copy-text={installCmd}
+          data-copy-source="hero"
+          data-copy-target="cli"
+          data-copy-surface="website"
+          aria-label="Copy Shadow CLI install command"
+        >
+          <span data-copy-label>Copy CLI install</span>
         </button>
+
+        <a
+          href={marketplaceUrl}
+          class="secondary-button"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-cta
+          data-cta-source="hero"
+          data-cta-target="vscode_marketplace"
+          data-cta-surface="website"
+        >
+          Install VS Code extension
+        </a>
+      </div>
+
+      <div class="hero-proof reveal r-d4">
+        <article>
+          <span>Any editor underneath</span>
+          <p>Vim, VS Code, JetBrains, Zed, Neovim, whatever your team already uses.</p>
+        </article>
+        <article>
+          <span>Clipboard-friendly handoff</span>
+          <p>Hosts get the full join command copied automatically, so the long link never becomes busywork.</p>
+        </article>
+        <article>
+          <span>Encrypted by default</span>
+          <p>The relay never sees your code. The key lives in the URL fragment on the client side.</p>
+        </article>
       </div>
     </div>
 
-    <p class="hero-alt reveal r-d4">
-      or&ensp;<code>go install github.com/go-johnnyhe/shadow@latest</code>
-    </p>
+    <aside class="hero-panel reveal r-d3">
+      <div class="panel-header">
+        <span class="panel-eyebrow">Launch flow</span>
+        <span class="panel-status">ready to share</span>
+      </div>
+
+      <div class="panel-body">
+        <div class="panel-step">
+          <span class="panel-num">01</span>
+          <div>
+            <h2>Start in the surface you like</h2>
+            <p>Run `shadow start .` from the CLI or launch a session from the VS Code sidebar.</p>
+          </div>
+        </div>
+
+        <div class="panel-step">
+          <span class="panel-num">02</span>
+          <div>
+            <h2>Shadow copies the awkward part</h2>
+            <p>The join command includes the E2E key, so it is long on purpose. Shadow handles the copy step for you.</p>
+          </div>
+        </div>
+
+        <div class="panel-command">
+          <span>share with your teammate</span>
+          <code>shadow join 'https://shadow-session.trycloudflare.com#e2e-key'</code>
+        </div>
+
+        <div class="panel-step">
+          <span class="panel-num">03</span>
+          <div>
+            <h2>Both sides edit live</h2>
+            <p>Not a screen share. Not editor lock-in. Just the same project updating in real time.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
   </div>
 </section>
 
-<script is:inline>
-  document.getElementById('hero-copy')?.addEventListener('click', function () {
-    var cmd = document.getElementById('hero-cmd')?.textContent || '';
-    navigator.clipboard.writeText(cmd).then(function () {
-      var btn = document.getElementById('hero-copy');
-      if (!btn) return;
-      btn.querySelector('.ico-copy').style.display = 'none';
-      btn.querySelector('.ico-check').style.display = 'block';
-      btn.classList.add('copied');
-      if (typeof posthog !== 'undefined') posthog.capture('install_command_copied');
-      setTimeout(function () {
-        btn.querySelector('.ico-copy').style.display = 'block';
-        btn.querySelector('.ico-check').style.display = 'none';
-        btn.classList.remove('copied');
-      }, 2000);
-    });
-  });
-</script>
-
 <style>
   .hero {
-    padding-top: clamp(7rem, 16vh, 12rem);
+    padding-top: clamp(5.5rem, 10vw, 8rem);
     padding-bottom: var(--gap);
   }
 
   .hero-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
-    text-align: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.82fr);
+    gap: 2rem;
+    align-items: stretch;
   }
 
   .hero-label {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: var(--text-muted);
-    letter-spacing: 0.02em;
-    margin-bottom: 2rem;
+    margin: 1.35rem 0 0;
+    font-size: 1.02rem;
+    color: var(--text-secondary);
+    max-width: 34rem;
   }
 
   .hero-title {
-    font-family: var(--font-serif);
-    font-size: clamp(2.6rem, 7vw, 4.5rem);
+    font-family: var(--font-display);
+    font-size: clamp(3.2rem, 7.2vw, 6rem);
     font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin-bottom: 1.75rem;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    margin: 1.7rem 0;
     color: var(--text);
   }
 
   .hero-title em {
-    font-style: italic;
+    font-style: normal;
     color: var(--accent);
   }
 
   .hero-desc {
-    font-size: 1.05rem;
+    font-size: 1.08rem;
     color: var(--text-secondary);
-    max-width: 480px;
-    margin: 0 auto 3rem;
+    max-width: 36rem;
+    margin-bottom: 2.2rem;
     line-height: 1.7;
   }
 
-  /* ——— Terminal block — dark on light ——— */
-  .hero-terminal {
-    max-width: 540px;
-    margin: 0 auto;
-    background: var(--surface);
-    border-radius: 10px;
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .hero-proof {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .hero-proof article,
+  .hero-panel {
+    border: 1px solid var(--border);
+    background: rgba(255, 248, 240, 0.66);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hero-proof article {
+    padding: 1.1rem 1.1rem 1.2rem;
+    border-radius: 1.25rem;
+  }
+
+  .hero-proof span {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .hero-proof p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .hero-panel {
+    border-radius: 1.8rem;
+    background:
+      linear-gradient(180deg, rgba(18, 22, 29, 0.98), rgba(22, 29, 40, 0.96));
+    color: #f8f1e8;
     overflow: hidden;
-    box-shadow:
-      0 1px 2px rgba(0,0,0,0.06),
-      0 4px 12px rgba(0,0,0,0.08),
-      0 16px 40px rgba(0,0,0,0.12);
-    transition: box-shadow 0.4s;
   }
 
-  .hero-terminal:hover {
-    box-shadow:
-      0 1px 2px rgba(0,0,0,0.06),
-      0 8px 20px rgba(0,0,0,0.1),
-      0 24px 56px rgba(0,0,0,0.16);
-  }
-
-  .term-chrome {
-    padding: 9px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .term-title {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.25);
-    letter-spacing: 0.04em;
-  }
-
-  .term-body {
+  .panel-header,
+  .panel-command,
+  .panel-step {
     display: flex;
-    align-items: center;
-    padding: 0.9rem 1.2rem;
-    gap: 0.6rem;
+    align-items: flex-start;
   }
 
-  .term-prompt {
+  .panel-header {
+    justify-content: space-between;
+    padding: 1.2rem 1.3rem;
+    border-bottom: 1px solid rgba(248, 241, 232, 0.1);
     font-family: var(--font-mono);
-    color: var(--accent);
-    font-weight: 500;
-    flex-shrink: 0;
-    opacity: 0.8;
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(248, 241, 232, 0.62);
   }
 
-  .term-cmd {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: rgba(255,255,255,0.85);
-    white-space: nowrap;
-    flex: 1;
-    text-align: left;
-    overflow-x: auto;
+  .panel-status {
+    color: #7fe1d3;
   }
 
-  .term-copy {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.25);
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    border-radius: 4px;
-    transition: color 0.2s;
+  .panel-body {
+    padding: 1.3rem;
   }
-  .term-copy:hover { color: rgba(255,255,255,0.6); }
-  .term-copy.copied { color: var(--accent); }
 
-  .hero-alt {
+  .panel-step {
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(248, 241, 232, 0.08);
+  }
+
+  .panel-step:last-child {
+    border-bottom: none;
+    padding-bottom: 0.2rem;
+  }
+
+  .panel-num {
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-top: 1rem;
+    color: rgba(248, 241, 232, 0.56);
+    flex-shrink: 0;
   }
-  .hero-alt code {
+
+  .panel-step h2 {
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  .panel-step p,
+  .panel-command span {
+    color: rgba(248, 241, 232, 0.72);
+  }
+
+  .panel-command {
+    flex-direction: column;
+    gap: 0.65rem;
+    border: 1px solid rgba(248, 241, 232, 0.12);
+    border-radius: 1.2rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .panel-command span {
     font-family: var(--font-mono);
-    color: var(--text-secondary);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .panel-command code {
+    font-size: 0.78rem;
+    line-height: 1.65;
+    word-break: break-all;
+    color: #f8f1e8;
+  }
+
+  @media (max-width: 980px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-proof {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 640px) {
-    .hero { padding-top: 5rem; }
-    .term-cmd { font-size: 0.68rem; }
+    .hero {
+      padding-top: 4.7rem;
+    }
+
+    .hero-title {
+      margin-top: 1.25rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+    }
+
+    .hero-actions > * {
+      width: 100%;
+    }
   }
 </style>

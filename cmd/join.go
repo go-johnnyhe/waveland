@@ -11,6 +11,7 @@ import (
 )
 
 var joinKey string
+var joinJSON bool
 
 var joinCmd = &cobra.Command{
 	Use:   "join <session-url>",
@@ -25,26 +26,45 @@ Example:
   shadow join 'https://abc123.trycloudflare.com#<e2e-key>'
 
 The session URL comes from whoever ran 'shadow start'.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 1 {
-			fmt.Println("Error: expected exactly one session URL")
-			cmd.Usage()
-			return
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if joinJSON {
+			cmd.SilenceErrors = true
+			cmd.SilenceUsage = true
 		}
 
-		fmt.Printf("\n  %s\n", ui.Dim("◗ shadow"))
+		if len(args) != 1 {
+			err := fmt.Errorf("expected exactly one session URL")
+			if joinJSON {
+				emitJSONError(err.Error())
+				return err
+			}
+			fmt.Printf("Error: %v\n", err)
+			cmd.Usage()
+			return nil
+		}
+
+		if !joinJSON {
+			fmt.Printf("\n  %s\n", ui.Dim("◗ shadow"))
+		}
 
 		err := runJoin(JoinOptions{
 			SessionURL: args[0],
 			E2EKey:     joinKey,
+			JSONMode:   joinJSON,
 		})
 		if err != nil {
+			if joinJSON {
+				emitJSONError(err.Error())
+				return err
+			}
 			fmt.Printf("Error: %v\n", err)
 		}
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(joinCmd)
 	joinCmd.Flags().StringVar(&joinKey, "key", "", "E2E share key (optional if included in URL fragment)")
+	joinCmd.Flags().BoolVar(&joinJSON, "json", false, "Emit structured JSON events to stdout")
 }

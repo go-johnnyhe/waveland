@@ -12,6 +12,7 @@ var startReadOnlyJoiners bool
 var startKey string
 var startPathFlag string
 var startForce bool
+var startJSON bool
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
@@ -33,15 +34,26 @@ The generated URL can be shared with anyone - they can join using:
   shadow join '<your-session-url>#<e2e-key>'
 
 Perfect for mock interviews, pair programming, and collaborative debugging.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		targetPath, err := resolveStartPath(args, startPathFlag)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			cmd.Usage()
-			return
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if startJSON {
+			cmd.SilenceErrors = true
+			cmd.SilenceUsage = true
 		}
 
-		fmt.Printf("\n  %s\n", ui.Dim("◗ shadow"))
+		targetPath, err := resolveStartPath(args, startPathFlag)
+		if err != nil {
+			if startJSON {
+				emitJSONError(err.Error())
+				return err
+			}
+			fmt.Printf("Error: %v\n", err)
+			cmd.Usage()
+			return nil
+		}
+
+		if !startJSON {
+			fmt.Printf("\n  %s\n", ui.Dim("◗ shadow"))
+		}
 
 		err = runStart(StartOptions{
 			Path:            targetPath,
@@ -49,10 +61,16 @@ Perfect for mock interviews, pair programming, and collaborative debugging.`,
 			E2EKey:          startKey,
 			ReadOnlyJoiners: startReadOnlyJoiners,
 			Force:           startForce,
+			JSONMode:        startJSON,
 		})
 		if err != nil {
+			if startJSON {
+				emitJSONError(err.Error())
+				return err
+			}
 			fmt.Printf("Error: %v\n", err)
 		}
+		return nil
 	},
 }
 
@@ -82,4 +100,5 @@ func init() {
 	startCmd.Flags().StringVar(&startKey, "key", "", "E2E share key (auto-generated if empty)")
 	startCmd.Flags().StringVar(&startPathFlag, "path", "", "Path to share (alternative to positional argument)")
 	startCmd.Flags().BoolVar(&startForce, "force", false, "Bypass large-directory warning and continue")
+	startCmd.Flags().BoolVar(&startJSON, "json", false, "Emit structured JSON events to stdout")
 }

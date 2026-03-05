@@ -1,0 +1,166 @@
+{
+  "name": "shadow-vscode",
+  "displayName": "Shadow",
+  "description": "Encrypted real-time coding sessions for VS Code, with clipboard-friendly sharing",
+  "version": "0.4.3",
+  "publisher": "go-johnnyhe77",
+  "icon": "media/shadow-icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/go-johnnyhe/shadow.git",
+    "directory": "vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/go-johnnyhe/shadow/issues"
+  },
+  "homepage": "https://github.com/go-johnnyhe/shadow#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "pair programming",
+    "collaboration",
+    "live coding",
+    "encryption",
+    "filesync"
+  ],
+  "galleryBanner": {
+    "color": "#11161d",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onView:shadow.session",
+    "onCommand:shadow.start",
+    "onCommand:shadow.join",
+    "onCommand:shadow.stop",
+    "onCommand:shadow.details",
+    "onCommand:shadow.installCli",
+    "onCommand:shadow.copyJoinUrl",
+    "onCommand:shadow.openOutput",
+    "onCommand:shadow.quickAction",
+    "onCommand:shadow.retry"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "shadow.start",
+        "title": "Shadow: Start Session"
+      },
+      {
+        "command": "shadow.join",
+        "title": "Shadow: Join Session"
+      },
+      {
+        "command": "shadow.stop",
+        "title": "Shadow: Stop Session"
+      },
+      {
+        "command": "shadow.details",
+        "title": "Shadow: Show Session Details"
+      },
+      {
+        "command": "shadow.installCli",
+        "title": "Shadow: Install Shadow CLI"
+      },
+      {
+        "command": "shadow.copyJoinUrl",
+        "title": "Shadow: Copy Join Command"
+      },
+      {
+        "command": "shadow.openOutput",
+        "title": "Shadow: Open Logs"
+      },
+      {
+        "command": "shadow.quickAction",
+        "title": "Shadow: Quick Actions"
+      },
+      {
+        "command": "shadow.retry",
+        "title": "Shadow: Retry Last Action"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "shadow",
+          "title": "Shadow",
+          "icon": "media/shadow-activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "shadow": [
+        {
+          "id": "shadow.session",
+          "name": "Session"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "shadow.session",
+        "contents": "Run Shadow from the CLI or start here in VS Code. The host session copies the full join command for you.\\n\\n[Start Session](command:shadow.start) [Join Session](command:shadow.join)\\n\\n[Install Shadow CLI](command:shadow.installCli) [Open Logs](command:shadow.openOutput)",
+        "when": "!shadow.hasSession"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "shadow.start",
+          "when": "view == shadow.session && !shadow.hasSession",
+          "group": "navigation@1"
+        },
+        {
+          "command": "shadow.join",
+          "when": "view == shadow.session && !shadow.hasSession",
+          "group": "navigation@2"
+        },
+        {
+          "command": "shadow.installCli",
+          "when": "view == shadow.session && !shadow.hasSession",
+          "group": "navigation@3"
+        },
+        {
+          "command": "shadow.copyJoinUrl",
+          "when": "view == shadow.session && shadow.canCopyJoin",
+          "group": "navigation@1"
+        },
+        {
+          "command": "shadow.retry",
+          "when": "view == shadow.session && shadow.hasError",
+          "group": "navigation@2"
+        },
+        {
+          "command": "shadow.stop",
+          "when": "view == shadow.session && shadow.hasActiveSession",
+          "group": "navigation@3"
+        },
+        {
+          "command": "shadow.details",
+          "when": "view == shadow.session && shadow.hasSession",
+          "group": "secondary@1"
+        },
+        {
+          "command": "shadow.openOutput",
+          "when": "view == shadow.session",
+          "group": "secondary@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

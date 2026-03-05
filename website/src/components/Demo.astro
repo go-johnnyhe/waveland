@@ -4,23 +4,63 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
 ---
 
 <section class="demo">
-  <div class="demo-inner reveal">
-    <div class="demo-window">
-      <div class="window-chrome">
-        <div class="chrome-dots">
-          <i></i><i></i><i></i>
-        </div>
-        <span class="chrome-title">shadow &mdash; demo</span>
-        <div class="chrome-space"></div>
+  <div class="section-shell demo-inner">
+    <div class="demo-copy reveal">
+      <p class="section-kicker">Built for real handoffs</p>
+      <h2 class="section-title">This is a live project session, not a laggy screen share.</h2>
+      <p class="section-lead">
+        Shadow syncs the filesystem itself. Hosts stay in their editor. Joiners stay in theirs.
+        The demo below is the actual product rhythm you want people to imagine from a launch post.
+      </p>
+
+      <div class="demo-notes">
+        <article>
+          <span>Starts fast</span>
+          <p>One install command, then `shadow start .` or the VS Code sidebar.</p>
+        </article>
+        <article>
+          <span>Shares cleanly</span>
+          <p>The copied join command is the handoff, so nobody has to manually reconstruct the long URL.</p>
+        </article>
+        <article>
+          <span>Stays private</span>
+          <p>The E2E key stays in the URL fragment, which never gets sent to the relay.</p>
+        </article>
       </div>
-      <video
-        src={`${base}demo.mp4`}
-        autoplay
-        loop
-        muted
-        playsinline
-        preload="metadata"
-      ></video>
+    </div>
+
+    <div class="demo-stage reveal r-d1" data-demo-root>
+      <div class="demo-window">
+        <div class="window-chrome">
+          <div class="chrome-dots">
+            <i></i><i></i><i></i>
+          </div>
+          <span class="chrome-title">shadow walkthrough</span>
+          <div class="chrome-space"></div>
+        </div>
+        <video
+          src={`${base}demo.mp4`}
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="metadata"
+          data-demo-video
+        ></video>
+      </div>
+
+      <div class="demo-footer">
+        <button
+          type="button"
+          class="ghost-button"
+          data-demo-toggle
+          data-demo-source="demo_section"
+          data-demo-state="playing"
+        >
+          <span data-demo-label>Pause loop</span>
+        </button>
+        <p>Keep this handy for launch replies. It shows the product in one glance.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -31,25 +71,24 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
   }
 
   .demo-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 2rem;
+    align-items: start;
   }
 
   .demo-window {
     background: var(--surface);
-    border-radius: 10px;
+    border-radius: 1.6rem;
     overflow: hidden;
-    box-shadow:
-      0 1px 2px rgba(0,0,0,0.06),
-      0 4px 12px rgba(0,0,0,0.08),
-      0 20px 48px rgba(0,0,0,0.14);
+    box-shadow: var(--shadow-xl);
   }
 
   .window-chrome {
     display: flex;
     align-items: center;
-    padding: 10px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0.95rem 1.1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
 
   .chrome-dots {
@@ -69,9 +108,10 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
     flex: 1;
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.25);
-    letter-spacing: 0.03em;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .chrome-space { width: 46px; }
@@ -79,5 +119,61 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
   video {
     width: 100%;
     display: block;
+  }
+
+  .demo-notes {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  .demo-notes article,
+  .demo-footer {
+    border: 1px solid var(--border);
+    border-radius: 1.2rem;
+    background: var(--paper);
+    backdrop-filter: blur(12px);
+  }
+
+  .demo-notes article {
+    padding: 1rem 1.05rem;
+  }
+
+  .demo-notes span {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.32rem;
+  }
+
+  .demo-notes p,
+  .demo-footer p {
+    color: var(--text-secondary);
+  }
+
+  .demo-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    margin-top: 1rem;
+  }
+
+  .demo-footer p {
+    max-width: 22rem;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 960px) {
+    .demo-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .demo-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 </style>
