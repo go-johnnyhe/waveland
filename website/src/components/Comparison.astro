@@ -1,10 +1,10 @@
 ---
 const rows = [
-  { label: 'Editor freedom', shadow: 'CLI or VS Code, any editor underneath', liveshare: 'VS Code only', screen: 'Any editor, but view-only for others' },
-  { label: 'Share step', shadow: 'Host copies the join command once', liveshare: 'Invite from VS Code', screen: 'Send a meeting link' },
+  { label: 'Editor freedom', shadow: 'Any editor (Vim, VS Code, JetBrains)', liveshare: 'VS Code only', screen: 'View-only for others' },
+  { label: 'Share step', shadow: 'Copy & paste one link', liveshare: 'Invite via Microsoft auth', screen: 'Send meeting link' },
   { label: 'Both people can edit', shadow: 'Yes', liveshare: 'Yes', screen: 'No' },
-  { label: 'Latency', shadow: 'Live filesystem sync over WebSocket', liveshare: 'Low', screen: 'High' },
-  { label: 'Encryption model', shadow: 'E2E key lives in the URL fragment', liveshare: 'Microsoft relay', screen: 'Depends on the call tool' },
+  { label: 'Latency', shadow: 'Near-zero (direct file sync)', liveshare: 'Low', screen: 'High (video encoding)' },
+  { label: 'Privacy', shadow: 'End-to-End Encrypted', liveshare: 'Relayed via Microsoft', screen: 'Varies by provider' },
 ];
 ---
 
@@ -12,10 +12,9 @@ const rows = [
   <div class="section-shell comparison-inner">
     <div class="comparison-copy reveal">
       <p class="section-kicker">Why Shadow</p>
-      <h2 class="section-title">Better than screensharing when you actually need to ship.</h2>
+      <h2 class="section-title">Built for shipping, not just watching.</h2>
       <p class="section-lead">
-        Shadow is for moments when one person should not have to drive and the other should not
-        have to switch editors. That is the gap between “collaboration” and “watching someone else type.”
+        Screensharing is great for presentations, but terrible for actual coding. Shadow syncs the files themselves, so you both have full control without giving up your personalized setups.
       </p>
     </div>
 
@@ -50,11 +49,9 @@ const rows = [
   }
 
   .comparison-copy {
-    text-align: center;
-    margin-bottom: 4rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    text-align: left;
+    margin-bottom: 3rem;
+    max-width: 48rem;
   }
 
   .table-wrap {

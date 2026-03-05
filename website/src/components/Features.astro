@@ -20,18 +20,18 @@ const features = [
 <section class="features">
   <div class="section-shell features-inner">
     <div class="feature-intro reveal">
-      <p class="section-kicker">CLI or VS Code</p>
-      <h2 class="section-title">One session. Two ways in.</h2>
+      <p class="section-kicker">Installation</p>
+      <h2 class="section-title">Zero friction for your team.</h2>
       <p class="section-lead">
-        Lead with the path that matches the person in front of you. CLI for zero ceremony.
-        VS Code for people who want a native panel and fewer terminal steps.
+        Lead with the path that matches the person in front of you. The CLI works everywhere.
+        The VS Code extension brings Shadow directly into their editor.
       </p>
     </div>
 
-    <div class="bento-grid">
+    <div class="paths-grid">
       <article class="bento-card cli reveal r-d1">
-        <span class="path-label">For any editor</span>
-        <h3>CLI install</h3>
+        <span class="path-label">Standalone CLI</span>
+        <h3>Terminal install</h3>
         <p>
           Best when you want the fastest path to a live session. Install once, run `shadow`, and
           keep using the editor you already love.
@@ -56,26 +56,30 @@ const features = [
       </article>
 
       <article class="bento-card vscode reveal r-d2">
-        <span class="path-label">For VS Code users</span>
-        <h3>Extension install</h3>
+        <span class="path-label">Native Extension</span>
+        <h3>VS Code Marketplace</h3>
         <p>
           Start, join, retry, and copy the share command from the Activity Bar. Great for teammates
           who want the product to feel native immediately.
         </p>
-        <a
-          href={marketplaceUrl}
-          class="ghost-button"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-cta
-          data-cta-source="install_paths"
-          data-cta-target="vscode_marketplace"
-          data-cta-surface="website"
-        >
-          Open VS Code Marketplace
-        </a>
+        <div class="code-wrap align-bottom">
+          <a
+            href={marketplaceUrl}
+            class="ghost-button"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cta
+            data-cta-source="install_paths"
+            data-cta-target="vscode_marketplace"
+            data-cta-surface="website"
+          >
+            Open VS Code Marketplace
+          </a>
+        </div>
       </article>
+    </div>
 
+    <div class="features-grid">
       {features.map((f, i) => (
         <article class={`bento-feature reveal r-d${i + 1}`}>
           <h3 class="feature-title">{f.title}</h3>
@@ -99,7 +103,14 @@ const features = [
     align-items: center;
   }
 
-  .bento-grid {
+  .paths-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .features-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 2rem;
@@ -113,14 +124,12 @@ const features = [
   }
 
   .bento-card {
-    grid-column: span 2;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
 
   .vscode {
-    grid-column: span 1;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04));
   }
 
@@ -129,7 +138,6 @@ const features = [
   }
 
   .bento-feature {
-    grid-column: span 1;
     padding: 2.5rem;
   }
 
@@ -147,6 +155,7 @@ const features = [
     line-height: 1.6;
     margin-bottom: 2rem;
     max-width: 28rem;
+    flex: 1; /* Pushes the button/code block down */
   }
 
   .code-wrap {
@@ -156,15 +165,20 @@ const features = [
     max-width: 32rem;
   }
 
+  .code-wrap.align-bottom {
+    margin-top: auto;
+  }
+
   .code-wrap code {
     flex: 1;
     padding: 0.95rem 1.25rem;
     border-radius: 0.5rem;
-    background: var(--paper-strong);
+    background: var(--bg-elevated);
     font-size: 0.85rem;
     display: flex;
     align-items: center;
     color: var(--text);
+    border: 1px solid var(--border);
   }
 
   .path-label {
@@ -191,12 +205,12 @@ const features = [
   }
 
   @media (max-width: 960px) {
-    .bento-grid {
+    .paths-grid,
+    .features-grid {
       grid-template-columns: 1fr;
     }
     
     .bento-card, .bento-feature {
-      grid-column: span 1;
       padding: 2rem;
     }
 

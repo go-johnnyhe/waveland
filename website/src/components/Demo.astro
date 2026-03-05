@@ -32,20 +32,6 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
           data-demo-video
         ></video>
       </div>
-
-      <div class="demo-footer">
-        <button
-          type="button"
-          class="ghost-button"
-          data-demo-toggle
-          data-demo-source="demo_section"
-          data-demo-state="playing"
-        >
-          <span data-demo-label>Pause loop</span>
-        </button>
-        <p>See it in action.</p>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -117,31 +103,5 @@ const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
   video {
     width: 100%;
     display: block;
-  }
-
-  .demo-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.1rem;
-    margin-top: 1.5rem;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background: var(--paper);
-    backdrop-filter: blur(12px);
-  }
-
-  .demo-footer p {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-  }
-
-  @media (max-width: 640px) {
-    .demo-footer {
-      flex-direction: column;
-      align-items: stretch;
-      text-align: center;
-    }
   }
 </style>

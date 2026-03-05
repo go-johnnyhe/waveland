@@ -27,5 +27,6 @@ export interface SessionInfo {
   workspacePath?: string;
   fileCount?: number;
   readOnly?: boolean;
+  hostReadOnly?: boolean;
   lastError?: string;
 }

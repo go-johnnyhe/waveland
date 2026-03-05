@@ -2,7 +2,7 @@
   "name": "shadow-vscode",
   "displayName": "Shadow",
   "description": "Encrypted real-time coding sessions for VS Code, with clipboard-friendly sharing",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "publisher": "go-johnnyhe77",
   "icon": "media/shadow-icon.png",
   "license": "MIT",
@@ -33,8 +33,10 @@
     "theme": "dark"
   },
   "activationEvents": [
+    "onStartupFinished",
     "onView:shadow.session",
     "onCommand:shadow.start",
+    "onCommand:shadow.startReadOnly",
     "onCommand:shadow.join",
     "onCommand:shadow.stop",
     "onCommand:shadow.details",
@@ -50,6 +52,10 @@
       {
         "command": "shadow.start",
         "title": "Shadow: Start Session"
+      },
+      {
+        "command": "shadow.startReadOnly",
+        "title": "Shadow: Start Read-Only Session"
       },
       {
         "command": "shadow.join",
@@ -104,7 +110,7 @@
     "viewsWelcome": [
       {
         "view": "shadow.session",
-        "contents": "Run Shadow from the CLI or start here in VS Code. The host session copies the full join command for you.\\n\\n[Start Session](command:shadow.start) [Join Session](command:shadow.join)\\n\\n[Install Shadow CLI](command:shadow.installCli) [Open Logs](command:shadow.openOutput)",
+        "contents": "Click the Shadow status bar item to start or join a session. Hosts get the full join command copied automatically.\\n\\n[Start Session](command:shadow.start) [Start Read-Only Session](command:shadow.startReadOnly) [Join Session](command:shadow.join)\\n\\n[Install Shadow CLI](command:shadow.installCli) [Open Logs](command:shadow.openOutput)",
         "when": "!shadow.hasSession"
       }
     ],
@@ -121,9 +127,14 @@
           "group": "navigation@2"
         },
         {
-          "command": "shadow.installCli",
+          "command": "shadow.startReadOnly",
           "when": "view == shadow.session && !shadow.hasSession",
           "group": "navigation@3"
+        },
+        {
+          "command": "shadow.installCli",
+          "when": "view == shadow.session && !shadow.hasSession",
+          "group": "navigation@4"
         },
         {
           "command": "shadow.copyJoinUrl",

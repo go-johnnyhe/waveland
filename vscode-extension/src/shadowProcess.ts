@@ -40,13 +40,18 @@ export class ShadowProcess {
   }
 
   /** Start a host session. */
-  start(binaryPath: string, workspacePath: string): void {
+  start(binaryPath: string, workspacePath: string, options?: { readOnlyJoiners?: boolean }): void {
     if (this._state !== SessionState.Idle && this._state !== SessionState.Error) {
       vscode.window.showWarningMessage("Shadow session already active.");
       return;
     }
-    this._session = { mode: "host", workspacePath };
-    this.spawn(binaryPath, ["start", ".", "--json"], workspacePath);
+    const args = ["start", ".", "--json"];
+    const readOnlyJoiners = Boolean(options?.readOnlyJoiners);
+    if (readOnlyJoiners) {
+      args.push("--read-only-joiners");
+    }
+    this._session = { mode: "host", workspacePath, hostReadOnly: readOnlyJoiners };
+    this.spawn(binaryPath, args, workspacePath);
   }
 
   /** Join an existing session. */

@@ -43,6 +43,15 @@ export class SessionTreeProvider implements vscode.TreeDataProvider<SessionItem>
       this.session.mode === "host" ? "broadcast" : "plug"
     ));
 
+    if (this.session.mode === "host") {
+      items.push(new SessionItem(
+        "Permissions",
+        this.session.hostReadOnly ? "Joiners are read-only" : "Everyone in the session can edit",
+        undefined,
+        this.session.hostReadOnly ? "lock" : "edit"
+      ));
+    }
+
     if (this.session.joinUrl) {
       const item = new SessionItem(
         "Share command",
@@ -54,7 +63,7 @@ export class SessionTreeProvider implements vscode.TreeDataProvider<SessionItem>
       items.push(item);
     }
 
-    if (this.session.readOnly) {
+    if (this.session.mode === "joiner" && this.session.readOnly) {
       items.push(new SessionItem("Read-only", "Local edits will not sync back to the host", undefined, "lock"));
     }
 

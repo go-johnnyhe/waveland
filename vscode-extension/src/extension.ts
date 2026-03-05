@@ -35,6 +35,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register commands.
   context.subscriptions.push(
     vscode.commands.registerCommand("shadow.start", cmdStart),
+    vscode.commands.registerCommand("shadow.startReadOnly", cmdStartReadOnly),
     vscode.commands.registerCommand("shadow.join", cmdJoin),
     vscode.commands.registerCommand("shadow.stop", cmdStop),
     vscode.commands.registerCommand("shadow.details", cmdDetails),
@@ -59,31 +60,32 @@ export function deactivate(): void {
 // -------------------------------------------------------------------
 
 async function cmdStart(): Promise<void> {
+  await cmdStartSession({ readOnlyJoiners: false });
+}
+
+async function cmdStartReadOnly(): Promise<void> {
+  await cmdStartSession({ readOnlyJoiners: true });
+}
+
+async function cmdStartSession(options: { readOnlyJoiners: boolean }): Promise<void> {
   const workspacePath = getWorkspacePath();
   if (!workspacePath) return;
 
   const binary = await ensureBinary();
   if (!binary) return;
 
-  shadowProcess.start(binary, workspacePath);
+  shadowProcess.start(binary, workspacePath, options);
 
   // When tunnel_ready fires, offer to copy the join URL.
   // Dispose on terminal events to avoid leaking listeners on failed starts.
   const disposable = shadowProcess.onEvent((evt) => {
     if (evt.event === "tunnel_ready" && evt.join_command) {
-      vscode.env.clipboard.writeText(evt.join_command);
-      vscode.window.showInformationMessage(
-        "Shadow session is live. The full join command is already on your clipboard.",
-        "Copy again",
-        "Show join command"
-      ).then((choice) => {
-        if (choice === "Copy again") {
-          void vscode.env.clipboard.writeText(evt.join_command!);
-        } else if (choice === "Show join command") {
-          outputChannel.appendLine(evt.join_command!);
-          outputChannel.show();
-        }
-      });
+      void vscode.env.clipboard.writeText(evt.join_command);
+      showInviteMessage(
+        options.readOnlyJoiners
+          ? "Shadow session started. The join command is already on your clipboard and joiners will be read-only."
+          : "Shadow session started. The join command is already on your clipboard and ready to send."
+      );
       disposable.dispose();
     } else if (evt.event === "error" || evt.event === "stopped") {
       disposable.dispose();
@@ -166,10 +168,14 @@ function cmdDetails(): void {
     `Mode: ${session.mode}`,
     `State: ${shadowProcess.state}`,
   ];
+  if (session.workspacePath) lines.push(`Workspace: ${session.workspacePath}`);
+  if (session.mode === "host") {
+    lines.push(`Permissions: ${session.hostReadOnly ? "joiners read-only" : "everyone can edit"}`);
+  }
   if (session.joinUrl) lines.push(`Join URL: ${session.joinUrl}`);
   if (session.joinCommand) lines.push(`Join command: ${session.joinCommand}`);
   if (session.fileCount !== undefined) lines.push(`Files: ${session.fileCount}`);
-  if (session.readOnly) lines.push("Read-only: yes");
+  if (session.mode === "joiner" && session.readOnly) lines.push("Read-only: yes");
   if (session.lastError) lines.push(`Last error: ${session.lastError}`);
   lines.push("", "End-to-end encryption active. Relay cannot read file contents.");
 
@@ -192,6 +198,14 @@ function cmdCopyJoinUrl(): void {
   const url = session?.joinCommand ?? session?.joinUrl;
   if (url) {
     void vscode.env.clipboard.writeText(url);
+    if (session?.mode === "host") {
+      showInviteMessage(
+        session.hostReadOnly
+          ? "Invitation copied again. Joiners will be read-only."
+          : "Invitation copied to clipboard. Send it to someone you trust."
+      );
+      return;
+    }
     const noun = session?.joinCommand ? "Join command" : "Join URL";
     vscode.window.showInformationMessage(`${noun} copied. Send it to your teammate.`);
   }
@@ -211,7 +225,7 @@ async function cmdRetry(): Promise<void> {
   if (!workspacePath) return;
 
   if (session.mode === "host") {
-    shadowProcess.start(binary, workspacePath);
+    shadowProcess.start(binary, workspacePath, { readOnlyJoiners: Boolean(session.hostReadOnly) });
     return;
   }
 
@@ -233,38 +247,61 @@ async function cmdQuickAction(): Promise<void> {
   const items: ActionItem[] = [];
 
   if (shadowProcess.state === SessionState.Idle || shadowProcess.state === SessionState.Error) {
-    items.push(
-      { id: "start", label: "$(play) Start Session", description: "Share this workspace" },
-      { id: "join", label: "$(plug) Join Session", description: "Join with a session URL" }
-    );
     if (shadowProcess.state === SessionState.Error) {
-      items.push({ id: "retry", label: "$(refresh) Retry Last Action", description: "Retry previous failed session action" });
+      items.push({
+        id: "retry",
+        label: "$(refresh) Retry Last Action",
+        description: "Retry the previous failed Shadow action",
+      });
     }
+    items.push(
+      { id: "start", label: "$(broadcast) Start Session", description: "Share this workspace live" },
+      {
+        id: "startReadOnly",
+        label: "$(lock) Start Read-Only Session",
+        description: "Invite others without syncing their edits back",
+      },
+      { id: "join", label: "$(plug) Join Session", description: "Paste a Shadow URL or full join command" }
+    );
   } else {
     if (shadowProcess.session?.joinCommand || shadowProcess.session?.joinUrl) {
       items.push({
         id: "copyJoin",
-        label: "$(copy) Copy Join Command",
-        description: "Share the teammate handoff",
+        label: "$(person-add) Invite Others (Copy Link)",
+        description: "Copy the full Shadow join command to your clipboard",
       });
     }
     items.push(
-      { id: "details", label: "$(info) Show Session Details", description: "Open Shadow session info" },
-      { id: "stop", label: "$(debug-stop) Stop Session", description: "End current Shadow session" }
+      { id: "details", label: "$(info) Session Details", description: "Show the current Shadow session summary" },
+      {
+        id: "stop",
+        label: shadowProcess.state === SessionState.RunningJoiner
+          ? "$(debug-stop) Leave Collaboration Session"
+          : "$(debug-stop) Stop Collaboration Session",
+        description: shadowProcess.state === SessionState.RunningJoiner
+          ? "Leave this Shadow session"
+          : "Stop the current Shadow session",
+      }
     );
   }
 
-  items.push({ id: "logs", label: "$(output) Open Shadow Logs", description: "Show output channel" });
-
   const picked = await vscode.window.showQuickPick(items, {
     title: "Shadow",
-    placeHolder: "Choose an action",
+    placeHolder:
+      shadowProcess.state === SessionState.RunningHost
+        ? "What would you like to do with this collaboration session?"
+        : shadowProcess.state === SessionState.RunningJoiner
+          ? "What would you like to do in this collaboration session?"
+          : "What would you like to do with Shadow?",
   });
   if (!picked) return;
 
   switch (picked.id) {
     case "start":
       await cmdStart();
+      break;
+    case "startReadOnly":
+      await cmdStartReadOnly();
       break;
     case "join":
       await cmdJoin();
@@ -280,9 +317,6 @@ async function cmdQuickAction(): Promise<void> {
       break;
     case "stop":
       cmdStop();
-      break;
-    case "logs":
-      cmdOpenOutput();
       break;
   }
 }
@@ -328,4 +362,25 @@ function refreshSessionUI(): void {
     Boolean(session?.joinCommand || session?.joinUrl)
   );
   void vscode.commands.executeCommand("setContext", "shadow.isHostSession", session?.mode === "host");
+}
+
+function showInviteMessage(message: string): void {
+  void vscode.window.showInformationMessage(
+    message,
+    "Copy again",
+    "Session details",
+    "Stop session"
+  ).then((choice) => {
+    if (choice === "Copy again") {
+      const session = shadowProcess.session;
+      const text = session?.joinCommand ?? session?.joinUrl;
+      if (text) {
+        void vscode.env.clipboard.writeText(text);
+      }
+    } else if (choice === "Session details") {
+      cmdDetails();
+    } else if (choice === "Stop session") {
+      cmdStop();
+    }
+  });
 }

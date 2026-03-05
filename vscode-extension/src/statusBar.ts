@@ -15,19 +15,21 @@ export class StatusBar {
   update(state: SessionState, session: SessionInfo | null): void {
     switch (state) {
       case SessionState.Idle:
-        this.item.text = "$(broadcast) Shadow: Idle";
+        this.item.text = "$(broadcast) Shadow";
         this.item.tooltip = "Start or join a Shadow session";
         this.item.backgroundColor = undefined;
         break;
       case SessionState.Starting:
         this.item.text = "$(sync~spin) Shadow: Starting\u2026";
-        this.item.tooltip = "Setting up the encrypted relay and share flow";
+        this.item.tooltip = "Creating your Shadow session";
         this.item.backgroundColor = undefined;
         break;
       case SessionState.RunningHost:
-        this.item.text = "$(broadcast) Shadow: Sharing";
+        this.item.text = "$(broadcast) Shadow: Shared";
         this.item.tooltip = session?.joinCommand
-          ? "Join command copied and ready to share"
+          ? session.hostReadOnly
+            ? "Join command copied. Joiners will be read-only."
+            : "Join command copied and ready to share"
           : "Hosting a Shadow session";
         this.item.backgroundColor = undefined;
         break;
@@ -43,7 +45,7 @@ export class StatusBar {
         break;
       case SessionState.Error:
         this.item.text = "$(error) Shadow: Error";
-        this.item.tooltip = session?.lastError ?? "Click for Shadow actions";
+        this.item.tooltip = session?.lastError ?? "Open the Shadow menu to retry or start again";
         this.item.backgroundColor = new vscode.ThemeColor("statusBarItem.errorBackground");
         break;
     }
