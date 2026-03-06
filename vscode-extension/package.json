@@ -2,7 +2,7 @@
   "name": "shadow-vscode",
   "displayName": "Shadow",
   "description": "Encrypted real-time coding sessions for VS Code, with clipboard-friendly sharing",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "publisher": "go-johnnyhe77",
   "icon": "media/shadow-icon.png",
   "license": "MIT",
@@ -51,43 +51,58 @@
     "commands": [
       {
         "command": "shadow.start",
-        "title": "Shadow: Start Session"
+        "title": "Shadow: Start Session",
+        "shortTitle": "Start",
+        "icon": "$(broadcast)"
       },
       {
         "command": "shadow.startReadOnly",
-        "title": "Shadow: Start Read-Only Session"
+        "title": "Shadow: Start Read-Only Session",
+        "shortTitle": "Read-Only"
       },
       {
         "command": "shadow.join",
-        "title": "Shadow: Join Session"
+        "title": "Shadow: Join Session",
+        "shortTitle": "Join",
+        "icon": "$(plug)"
       },
       {
         "command": "shadow.stop",
-        "title": "Shadow: Stop Session"
+        "title": "Shadow: Stop Session",
+        "shortTitle": "Stop",
+        "icon": "$(debug-stop)"
       },
       {
         "command": "shadow.details",
-        "title": "Shadow: Show Session Details"
+        "title": "Shadow: Show Session Details",
+        "shortTitle": "Details"
       },
       {
         "command": "shadow.installCli",
-        "title": "Shadow: Install Shadow CLI"
+        "title": "Shadow: Install Shadow CLI",
+        "shortTitle": "Install CLI"
       },
       {
         "command": "shadow.copyJoinUrl",
-        "title": "Shadow: Copy Join Command"
+        "title": "Shadow: Copy Join Command",
+        "shortTitle": "Copy Invite",
+        "icon": "$(person-add)"
       },
       {
         "command": "shadow.openOutput",
-        "title": "Shadow: Open Logs"
+        "title": "Shadow: Open Logs",
+        "shortTitle": "Logs"
       },
       {
         "command": "shadow.quickAction",
-        "title": "Shadow: Quick Actions"
+        "title": "Shadow: Quick Actions",
+        "shortTitle": "Actions"
       },
       {
         "command": "shadow.retry",
-        "title": "Shadow: Retry Last Action"
+        "title": "Shadow: Retry Last Action",
+        "shortTitle": "Retry",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -103,17 +118,11 @@
       "shadow": [
         {
           "id": "shadow.session",
-          "name": "Session"
+          "name": "Session",
+          "type": "webview"
         }
       ]
     },
-    "viewsWelcome": [
-      {
-        "view": "shadow.session",
-        "contents": "Click the Shadow status bar item to start or join a session. Hosts get the full join command copied automatically.\\n\\n[Start Session](command:shadow.start) [Start Read-Only Session](command:shadow.startReadOnly) [Join Session](command:shadow.join)\\n\\n[Install Shadow CLI](command:shadow.installCli) [Open Logs](command:shadow.openOutput)",
-        "when": "!shadow.hasSession"
-      }
-    ],
     "menus": {
       "view/title": [
         {
@@ -129,12 +138,12 @@
         {
           "command": "shadow.startReadOnly",
           "when": "view == shadow.session && !shadow.hasSession",
-          "group": "navigation@3"
+          "group": "secondary@1"
         },
         {
           "command": "shadow.installCli",
           "when": "view == shadow.session && !shadow.hasSession",
-          "group": "navigation@4"
+          "group": "secondary@2"
         },
         {
           "command": "shadow.copyJoinUrl",
@@ -154,12 +163,12 @@
         {
           "command": "shadow.details",
           "when": "view == shadow.session && shadow.hasSession",
-          "group": "secondary@1"
+          "group": "secondary@3"
         },
         {
           "command": "shadow.openOutput",
           "when": "view == shadow.session",
-          "group": "secondary@2"
+          "group": "secondary@4"
         }
       ]
     }

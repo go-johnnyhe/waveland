@@ -2,24 +2,25 @@ import { promises as fsp } from "fs";
 import * as vscode from "vscode";
 import { ShadowProcess } from "./shadowProcess";
 import { StatusBar } from "./statusBar";
-import { SessionTreeProvider } from "./sessionPanel";
+import { SessionWebviewProvider } from "./sessionWebview";
 import { ensureBinary, detectBinary, promptInstall } from "./installer";
 import { SessionState } from "./types";
 
 let shadowProcess: ShadowProcess;
 let statusBar: StatusBar;
-let sessionTree: SessionTreeProvider;
+let sessionWebview: SessionWebviewProvider;
 let outputChannel: vscode.OutputChannel;
 
 export function activate(context: vscode.ExtensionContext): void {
   outputChannel = vscode.window.createOutputChannel("Shadow");
   shadowProcess = new ShadowProcess(outputChannel);
   statusBar = new StatusBar();
-  sessionTree = new SessionTreeProvider();
+  sessionWebview = new SessionWebviewProvider();
 
-  const treeView = vscode.window.createTreeView("shadow.session", {
-    treeDataProvider: sessionTree,
-  });
+  const webviewDisposable = vscode.window.registerWebviewViewProvider(
+    SessionWebviewProvider.viewType,
+    sessionWebview,
+  );
 
   // Wire state changes to UI.
   shadowProcess.onStateChange(() => {
@@ -44,7 +45,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("shadow.retry", cmdRetry),
     vscode.commands.registerCommand("shadow.openOutput", cmdOpenOutput),
     vscode.commands.registerCommand("shadow.quickAction", cmdQuickAction),
-    treeView,
+    webviewDisposable,
     outputChannel,
     statusBar,
     { dispose: () => shadowProcess.dispose() },
@@ -347,7 +348,7 @@ function refreshSessionUI(): void {
   const state = shadowProcess.state;
 
   statusBar.update(state, session);
-  sessionTree.update(state, session);
+  sessionWebview.update(state, session);
 
   void vscode.commands.executeCommand("setContext", "shadow.hasSession", Boolean(session));
   void vscode.commands.executeCommand(
