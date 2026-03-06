@@ -114,6 +114,7 @@ code {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
+  margin-bottom: 0.75rem;
 }
 
 .section-kicker::before {
