@@ -1,6 +1,6 @@
 {
   "name": "shadow-vscode",
-  "displayName": "Shadow",
+  "displayName": "Shadow Sync",
   "description": "Encrypted real-time coding sessions for VS Code, with clipboard-friendly sharing",
   "version": "0.4.5",
   "publisher": "go-johnnyhe77",

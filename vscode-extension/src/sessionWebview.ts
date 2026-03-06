@@ -77,11 +77,9 @@ document.addEventListener('click', e => {
     return `
 <div class="hero">
   <span class="hero-icon">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3.75" y="4.75" width="8.5" height="8.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-      <rect x="11.75" y="10.75" width="8.5" height="8.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/>
-      <path d="M12 8.75L15.75 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M8.25 15.25L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="7" fill="#1c1b18"/>
+      <path d="M16 6 A10 10 0 0 1 16 26 L16 6Z" fill="#faf9f6"/>
     </svg>
   </span>
   <p class="hero-title">Shadow</p>
@@ -213,10 +211,6 @@ body{
 .hero-icon{
   display:flex;
   align-items:center;justify-content:center;
-  width:40px;height:40px;
-  border-radius:10px;
-  background:var(--vscode-button-background);
-  color:var(--vscode-button-foreground);
   margin-bottom:10px;
 }
 .hero-title{font-size:16px;font-weight:600;margin-bottom:4px}

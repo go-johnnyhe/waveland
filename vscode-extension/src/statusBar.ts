@@ -15,7 +15,7 @@ export class StatusBar {
   update(state: SessionState, session: SessionInfo | null): void {
     switch (state) {
       case SessionState.Idle:
-        this.item.text = "$(broadcast) Shadow";
+        this.item.text = "◗ Shadow";
         this.item.tooltip = "Start or join a Shadow session";
         this.item.backgroundColor = undefined;
         break;
@@ -25,7 +25,7 @@ export class StatusBar {
         this.item.backgroundColor = undefined;
         break;
       case SessionState.RunningHost:
-        this.item.text = "$(broadcast) Shadow: Shared";
+        this.item.text = "◗ Shadow: Shared";
         this.item.tooltip = session?.joinCommand
           ? session.hostReadOnly
             ? "Join command copied. Joiners will be read-only."
@@ -34,7 +34,7 @@ export class StatusBar {
         this.item.backgroundColor = undefined;
         break;
       case SessionState.RunningJoiner:
-        this.item.text = "$(broadcast) Shadow: Joined";
+        this.item.text = "◗ Shadow: Joined";
         this.item.tooltip = "Connected to a Shadow session";
         this.item.backgroundColor = undefined;
         break;
