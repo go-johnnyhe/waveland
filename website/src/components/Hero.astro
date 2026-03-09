@@ -6,19 +6,24 @@ import AppMockup from './AppMockup.astro';
 <section class="hero">
   <div class="section-shell hero-inner">
     <div class="hero-copy">
-      <span class="eyebrow-chip reveal">for developers who pair</span>
-
       <h1 class="hero-title reveal r-d1">
-        Pair program without<br />
-        <em>leaving your editor.</em>
+        Screensharing &ne;<br />
+        pair programming.
       </h1>
 
       <p class="hero-desc reveal r-d2">
-        Shadow syncs your project files to your teammate's machine in real time.
-        One click to start, one link to share.
+        Most &ldquo;pairing&rdquo; is one person driving. The other is <strong>stuck</strong> in someone else&rsquo;s setup.
       </p>
 
-      <div class="hero-actions reveal r-d2">
+      <p class="hero-punch reveal r-d2">
+        Shadow lets both of you edit live, in your own editor.
+      </p>
+
+      <p class="hero-editors reveal r-d3">
+        VS Code &middot; Neovim &middot; Vim &middot; JetBrains &middot; Zed &mdash; keep your setup.
+      </p>
+
+      <div class="hero-actions reveal r-d3">
         <a
           href={dmgUrl}
           class="primary-button"
@@ -82,6 +87,28 @@ import AppMockup from './AppMockup.astro';
     margin-top: 2rem;
     max-width: 38rem;
     color: var(--text-secondary);
+  }
+
+  .hero-desc strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .hero-punch {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    margin-top: 0.5rem;
+    max-width: 38rem;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .hero-editors {
+    margin-top: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
   }
 
   .hero-actions {

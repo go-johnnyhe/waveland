@@ -1,11 +1,19 @@
 # Shadow
 
-Real-time code collaboration that works with any editor. Like Google Docs, but for your codebase.
+Screensharing ≠ pair programming. Most "pairing" is one person driving while the other is stuck in someone else's setup. Shadow lets both of you edit live, in your own editor.
 
 <!-- To add a demo video: upload demo.mp4 via GitHub's UI (drag into an issue or PR), then paste the resulting URL below. -->
 <!-- <video src="https://github.com/user-attachments/assets/PASTE-ID-HERE" width="720" muted autoplay loop playsinline controls></video> -->
 
 ## Install
+
+### macOS App (recommended)
+
+Download [Shadow.dmg](https://github.com/go-johnnyhe/shadow/releases/latest/download/Shadow.dmg) from the latest release. Open it, drag Shadow to Applications, and you're done.
+
+The app lives in your menu bar — click Start, pick a folder, and send the link.
+
+### CLI
 
 ```bash
 curl -sSf https://raw.githubusercontent.com/go-johnnyhe/shadow/main/install.sh | sh
@@ -17,19 +25,26 @@ or install with Go:
 go install github.com/go-johnnyhe/shadow@latest
 ```
 
-Or install the VS Code extension:
+### VS Code Extension
 
 [Shadow on the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=go-johnnyhe77.shadow-vscode)
 
 ## Quick Start
 
+### With the macOS app
+
+1. Click **Start Session** in the menu bar
+2. Pick your project folder
+3. Send the auto-copied invite link to your partner
+4. They click the link or paste it into their Shadow app
+
+### With the CLI
+
 ```bash
 shadow
 ```
 
-That's it. An interactive wizard walks you through starting or joining a session.
-
-Or use the commands directly:
+An interactive wizard walks you through starting or joining a session. Or use the commands directly:
 
 ```bash
 # Host — start sharing your project
@@ -38,9 +53,6 @@ shadow start .
 # Partner — join with the generated URL
 shadow join 'https://abc123.trycloudflare.com#<key>'
 ```
-
-When a host session comes online, Shadow copies the full join command to the clipboard for you.
-The VS Code extension follows the same flow from the Activity Bar.
 
 ## How Is This Different?
 
@@ -51,6 +63,10 @@ The VS Code extension follows the same flow from the Activity Bar.
 | Both can edit | Yes | Yes | No |
 | Setup required | Zero | Extension install | None |
 | Encryption | E2E | Microsoft servers | Varies |
+
+## Editor Support
+
+Shadow works at the filesystem level, so it works with **any editor** — VS Code, Neovim, Vim, JetBrains, Zed, whatever you use.
 
 ## How It Works
 
@@ -64,19 +80,13 @@ You (any editor)              Your partner (any editor)
                   (WebSocket)
 ```
 
-1. Run `shadow start .` in your project directory
-2. Shadow copies the join command for you
-3. Share that command with your partner
-4. They run `shadow join '<url>'`
+1. Start a session (via the app or `shadow start .`)
+2. Shadow copies the invite link for you
+3. Share that link with your partner
+4. They join (via the app or `shadow join '<url>'`)
 5. Both of you see live changes — `->` outgoing, `<-` incoming
 
 Files are **end-to-end encrypted**. The server is a dumb relay that never sees your code. The encryption key lives in the URL fragment (`#<key>`) which is never sent to the server.
-
-## Editor Support
-
-Shadow works at the filesystem level, so it works with **any editor** — VS Code, Vim, Neovim, JetBrains, Zed, whatever you use.
-
-If you want a native GUI for start/join/status inside VS Code, install the Marketplace extension and use the same Shadow CLI-powered sessions there.
 
 ## Options
 
@@ -98,10 +108,10 @@ If you want a native GUI for start/join/status inside VS Code, install the Marke
 
 ## Use Cases
 
-- **Pair programming**, code together in real-time, each in your own editor
-- **Technical interviews**, watch candidates code live without screenshare lag
-- **Code reviews**, walk through changes together with live editing
-- **Debugging sessions**, reproduce and fix issues collaboratively
+- **Pair programming** — code together in real-time, each in your own editor
+- **Technical interviews** — watch candidates code live without screenshare lag
+- **Code reviews** — walk through changes together with live editing
+- **Debugging sessions** — reproduce and fix issues collaboratively
 
 ## Limitations
 

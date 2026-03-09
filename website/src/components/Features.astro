@@ -1,41 +1,41 @@
 ---
-const features = [
-  {
-    title: 'Any editor, full control',
-    desc: "Your teammate's Vim config doesn't affect your VS Code. Shadow syncs the files underneath — everyone keeps their own setup, keybindings, and extensions.",
-    accent: true,
-  },
-  {
-    title: 'Zero-knowledge encryption',
-    desc: "The encryption key lives in the URL fragment — it never touches the server. The relay sees ciphertext. Not even we can read your code.",
-    accent: false,
-  },
-  {
-    title: 'No accounts. Ever.',
-    desc: 'No email, no OAuth, no onboarding wizard. Download, click Start, pair. The code is MIT-licensed and fully open source.',
-    accent: false,
-  },
-  {
-    title: 'Lightweight by design',
-    desc: 'A native macOS app that sits in your menu bar. No Electron. Start sessions without touching a terminal or leaving your editor.',
-    accent: true,
-  },
-];
 ---
 
 <section class="features">
   <div class="section-shell features-inner">
-    <div class="feature-intro reveal">
-      <h2 class="section-title">The details that matter.</h2>
-    </div>
-
     <div class="features-grid">
-      {features.map((f, i) => (
-        <article class={`bento-feature reveal r-d${i + 1}${f.accent ? ' bento-accent' : ''}`}>
-          <h3 class="feature-title">{f.title}</h3>
-          <p class="feature-desc">{f.desc}</p>
-        </article>
-      ))}
+      <article class="feature feature-hero reveal">
+        <h3 class="feature-title">Any editor, full control</h3>
+        <p class="feature-desc">Your teammate's Vim config doesn't affect your VS Code. Shadow syncs the files underneath — everyone keeps their own setup, keybindings, and extensions.</p>
+        <div class="editor-row">
+          <span>VS Code</span>
+          <span class="dot">&middot;</span>
+          <span>Neovim</span>
+          <span class="dot">&middot;</span>
+          <span>Vim</span>
+          <span class="dot">&middot;</span>
+          <span>JetBrains</span>
+          <span class="dot">&middot;</span>
+          <span>Zed</span>
+        </div>
+      </article>
+
+      <article class="feature reveal r-d1">
+        <h3 class="feature-title">Zero-knowledge encryption</h3>
+        <p class="feature-desc">The encryption key lives in the URL fragment — it never touches the server. The relay sees ciphertext. Not even we can read your code.</p>
+        <code class="feature-detail">https://.../<span class="key-highlight">#e2e-key</span></code>
+      </article>
+
+      <article class="feature reveal r-d2">
+        <h3 class="feature-title">No accounts. Ever.</h3>
+        <p class="feature-desc">No email, no OAuth, no onboarding wizard. Download, click Start, pair. The code is MIT-licensed and fully open source.</p>
+      </article>
+
+      <article class="feature reveal r-d3">
+        <h3 class="feature-title">Lightweight by design</h3>
+        <p class="feature-desc">A native macOS app that sits in your menu bar. No Electron. Start sessions without touching a terminal.</p>
+        <span class="feature-detail">Native Swift &middot; menu bar app</span>
+      </article>
     </div>
   </div>
 </section>
@@ -45,52 +45,72 @@ const features = [
     margin-bottom: var(--gap);
   }
 
-  .feature-intro {
-    text-align: center;
-    margin-bottom: 5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    overflow: hidden;
   }
 
-  .bento-feature {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 1.5rem;
-    padding: 2.5rem 3rem;
+  .feature {
+    background: var(--bg);
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
   }
 
-  .bento-accent {
-    background: linear-gradient(135deg, rgba(34, 211, 170, 0.05), rgba(255, 255, 255, 0.02));
+  .feature-hero {
+    grid-column: 1 / -1;
   }
 
   .feature-title {
     font-family: var(--font-display);
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     color: var(--text);
   }
 
   .feature-desc {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    line-height: 1.6;
-    max-width: 32rem;
+    line-height: 1.65;
+    max-width: 48rem;
+  }
+
+  .editor-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .dot {
+    color: var(--border-strong);
+  }
+
+  .feature-detail {
+    margin-top: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .key-highlight {
+    color: var(--accent);
   }
 
   @media (max-width: 960px) {
     .features-grid {
       grid-template-columns: 1fr;
-    }
-
-    .bento-feature {
-      padding: 2rem;
     }
   }
 </style>
