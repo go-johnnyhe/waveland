@@ -1,8 +1,8 @@
 # Shadow
 
-Screensharing ≠ pair programming. Most "pairing" is one person driving while the other is stuck in someone else's setup. Shadow lets both of you edit live, in your own editor.
+Most "pairing" is one person driving while the other is stuck in someone else's setup. Shadow lets both of you edit live, in your own editor.
 
-<video src="demo.mp4" width="720" muted autoplay loop playsinline controls></video>
+<video src="https://github.com/user-attachments/assets/0a03dbd3-9fe8-4e7b-bc30-83a217d57caa" width="720" muted autoplay loop playsinline controls></video>
 
 ## Install
 
