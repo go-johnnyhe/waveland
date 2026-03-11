@@ -2,8 +2,7 @@
 
 Screensharing ≠ pair programming. Most "pairing" is one person driving while the other is stuck in someone else's setup. Shadow lets both of you edit live, in your own editor.
 
-<!-- To add a demo video: upload demo.mp4 via GitHub's UI (drag into an issue or PR), then paste the resulting URL below. -->
-<!-- <video src="https://github.com/user-attachments/assets/PASTE-ID-HERE" width="720" muted autoplay loop playsinline controls></video> -->
+<video src="demo.mp4" width="720" muted autoplay loop playsinline controls></video>
 
 ## Install
 
@@ -13,7 +12,7 @@ Download [Shadow.dmg](https://github.com/go-johnnyhe/shadow/releases/latest/down
 
 > **First launch:** If macOS says it can't verify the app, right-click Shadow.app and select **Open**, then click **Open** again.
 
-The app lives in your menu bar — click Start, pick a folder, and send the link.
+The app lives in your **menu bar**. Click Start, pick a folder, and send the link.
 
 ### CLI
 
@@ -27,9 +26,9 @@ or install with Go:
 go install github.com/go-johnnyhe/shadow@latest
 ```
 
-### VS Code Extension
-
-[Shadow on the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=go-johnnyhe77.shadow-vscode)
+<!-- ### VS Code Extension -->
+<!---->
+<!-- [Shadow on the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=go-johnnyhe77.shadow-vscode) -->
 
 ## Quick Start
 
