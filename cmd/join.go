@@ -12,6 +12,7 @@ import (
 
 var joinKey string
 var joinJSON bool
+var joinPathFlag string
 
 var joinCmd = &cobra.Command{
 	Use:   "join <session-url>",
@@ -50,6 +51,7 @@ The session URL comes from whoever ran 'shadow start'.`,
 		err := runJoin(JoinOptions{
 			SessionURL: args[0],
 			E2EKey:     joinKey,
+			Path:       joinPathFlag,
 			JSONMode:   joinJSON,
 		})
 		if err != nil {
@@ -66,5 +68,6 @@ The session URL comes from whoever ran 'shadow start'.`,
 func init() {
 	rootCmd.AddCommand(joinCmd)
 	joinCmd.Flags().StringVar(&joinKey, "key", "", "E2E share key (optional if included in URL fragment)")
+	joinCmd.Flags().StringVar(&joinPathFlag, "path", "", "Directory to sync into (alternative to current directory)")
 	joinCmd.Flags().BoolVar(&joinJSON, "json", false, "Emit structured JSON events to stdout")
 }

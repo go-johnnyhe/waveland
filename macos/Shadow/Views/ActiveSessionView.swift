@@ -36,10 +36,32 @@ struct ActiveSessionView: View {
                 if !isHost && session.readOnly {
                     infoRow("Access", "Read-only")
                 }
-                if let count = session.fileCount {
-                    infoRow("Files synced", "\(count)")
+                infoRow("Files synced", "\((session.fileCount ?? 0) + session.liveSyncCount)")
+                if let lastSync = session.lastSyncTime {
+                    infoRow("Last sync", lastSync.relativeDescription)
                 }
                 infoRow("Security", "E2E encrypted")
+            }
+
+            // Recent activity
+            if !session.recentFiles.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Recent activity")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ForEach(session.recentFiles.suffix(5), id: \.self) { file in
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.left.arrow.right")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text(file)
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
             }
 
             // Copy invite (host only)
@@ -78,5 +100,13 @@ struct ActiveSessionView: View {
         .overlay(alignment: .bottom) {
             Divider()
         }
+    }
+}
+
+private extension Date {
+    var relativeDescription: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: self, relativeTo: Date())
     }
 }

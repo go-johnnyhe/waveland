@@ -34,6 +34,20 @@ struct ErrorView: View {
                         .stroke(Color.red.opacity(0.25), lineWidth: 1)
                 )
 
+            // Diagnostic log
+            if !viewModel.session.stderrLog.isEmpty {
+                DisclosureGroup("Diagnostic Log") {
+                    ScrollView {
+                        Text(viewModel.session.stderrLog.joined(separator: "\n"))
+                            .font(.system(.caption2, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
+                    .frame(maxHeight: 120)
+                }
+                .font(.caption)
+            }
+
             // Action buttons
             VStack(spacing: 8) {
                 Button {

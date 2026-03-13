@@ -11,6 +11,9 @@ struct SessionInfo {
     var hostReadOnly: Bool = false
     var lastError: String? = nil
     var recentFiles: [String] = []
+    var stderrLog: [String] = []
+    var liveSyncCount: Int = 0
+    var lastSyncTime: Date? = nil
 
     var directoryName: String? {
         guard let path = directoryPath else { return nil }

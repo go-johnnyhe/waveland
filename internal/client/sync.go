@@ -477,7 +477,11 @@ func (c *Client) notifyInfo(msg string) {
 func (c *Client) monitorFiles(ctx context.Context) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Println("failed to create a watcher: ", err)
+		msg := fmt.Sprintf("cannot create file watcher: %v", err)
+		log.Println(msg)
+		if c.onEvent != nil {
+			c.onEvent("error", "", msg)
+		}
 		return
 	}
 
@@ -489,11 +493,12 @@ func (c *Client) monitorFiles(ctx context.Context) {
 	go c.processFileEvents(ctx, watcher)
 
 	if err := c.addWatchRecursive(watcher, c.baseDir); err != nil {
+		msg := fmt.Sprintf("cannot watch directory: %v", err)
 		if c.onEvent != nil {
-			c.onEvent("error", "", "Cannot watch directory (filesystem issue)")
+			c.onEvent("error", "", msg)
 			return
 		}
-		fmt.Println("\nCannot watch this directory (filesystem issue)")
+		fmt.Printf("\n%s\n", msg)
 		fmt.Println("\nQuick fix, run these commands:")
 		fmt.Println("  $ mkdir -p /tmp/shadow && cd /tmp/shadow")
 		fmt.Println("  $ shadow join <session-url>")
@@ -505,8 +510,18 @@ func (c *Client) monitorFiles(ctx context.Context) {
 }
 
 func (c *Client) addWatchRecursive(watcher *fsnotify.Watcher, root string) error {
-	return filepath.WalkDir(root, func(currentPath string, d fs.DirEntry, walkErr error) error {
+	cleanRoot := filepath.Clean(root)
+	watchedAny := false
+	watchedRoot := false
+	var rootWatchErr error
+
+	err := filepath.WalkDir(cleanRoot, func(currentPath string, d fs.DirEntry, walkErr error) error {
+		currentPath = filepath.Clean(currentPath)
 		if walkErr != nil {
+			log.Printf("failed to inspect %s: %v", currentPath, walkErr)
+			if currentPath == cleanRoot && rootWatchErr == nil {
+				rootWatchErr = fmt.Errorf("cannot access %s: %w", currentPath, walkErr)
+			}
 			return nil
 		}
 
@@ -533,9 +548,30 @@ func (c *Client) addWatchRecursive(watcher *fsnotify.Watcher, root string) error
 
 		if err := watcher.Add(currentPath); err != nil {
 			log.Printf("failed to watch %s: %v", currentPath, err)
+			if currentPath == cleanRoot && rootWatchErr == nil {
+				rootWatchErr = fmt.Errorf("cannot watch %s: %w", currentPath, err)
+			}
+			return nil
+		}
+		watchedAny = true
+		if currentPath == cleanRoot {
+			watchedRoot = true
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	if !watchedRoot && rootWatchErr != nil {
+		return rootWatchErr
+	}
+	if !watchedAny {
+		if rootWatchErr != nil {
+			return rootWatchErr
+		}
+		return fmt.Errorf("no watchable directories found under %s", cleanRoot)
+	}
+	return nil
 }
 
 func (c *Client) processFileEvents(ctx context.Context, watcher *fsnotify.Watcher) {
@@ -569,6 +605,9 @@ func (c *Client) processFileEvents(ctx context.Context, watcher *fsnotify.Watche
 				return
 			}
 			log.Println("error with watcher:", err)
+			if c.onEvent != nil {
+				c.onEvent("warning", "", fmt.Sprintf("file watcher error: %v", err))
+			}
 		}
 	}
 }

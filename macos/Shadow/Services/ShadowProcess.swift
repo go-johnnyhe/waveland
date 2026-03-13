@@ -24,16 +24,16 @@ final class ShadowProcess {
 
     /// Start a host session.
     func start(directoryPath: String, readOnlyJoiners: Bool) {
-        var args = ["start", ".", "--json"]
+        var args = ["start", "--path", directoryPath, "--json"]
         if readOnlyJoiners {
             args.append("--read-only-joiners")
         }
-        spawn(args: args, cwd: directoryPath)
+        spawn(args: args, cwd: NSHomeDirectory())
     }
 
     /// Join an existing session.
     func join(url: String, directoryPath: String) {
-        spawn(args: ["join", url, "--json"], cwd: directoryPath)
+        spawn(args: ["join", url, "--path", directoryPath, "--json"], cwd: NSHomeDirectory())
     }
 
     /// Send SIGINT for graceful shutdown; force SIGKILL after 5s.

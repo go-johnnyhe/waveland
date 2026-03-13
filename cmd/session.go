@@ -33,6 +33,7 @@ type StartOptions struct {
 type JoinOptions struct {
 	SessionURL string
 	E2EKey     string
+	Path       string
 	JSONMode   bool
 }
 
@@ -241,11 +242,11 @@ func runStart(opts StartOptions) error {
 			} else {
 				fmt.Println("Error sending initial snapshot:", snapshotErr)
 			}
-		} else if count > 0 {
+		} else {
 			sessionFileCount.Add(int64(count))
 			if opts.JSONMode {
 				emitJSON(JSONEvent{Event: EventSnapshotComplete, Message: fmt.Sprintf("%d files", count), FileCount: count})
-			} else {
+			} else if count > 0 {
 				fmt.Printf("%s\n", ui.Dim(fmt.Sprintf("ready · %d files", count)))
 			}
 		}
@@ -268,6 +269,16 @@ func runJoin(opts JoinOptions) error {
 	if opts.SessionURL == "" {
 		return fmt.Errorf("session URL is required")
 	}
+	joinBaseDir := strings.TrimSpace(opts.Path)
+	if joinBaseDir == "" {
+		joinBaseDir = "."
+	}
+	if stat, err := os.Stat(joinBaseDir); err != nil {
+		return fmt.Errorf("failed to access join directory: %w", err)
+	} else if !stat.IsDir() {
+		return fmt.Errorf("join path must be a directory")
+	}
+
 	wsURL, keyFromURL, err := normalizeSessionWSURL(opts.SessionURL)
 	if err != nil {
 		return err
@@ -309,6 +320,7 @@ func runJoin(opts JoinOptions) error {
 
 	c, err := client.NewClient(conn, client.Options{
 		E2EKey:  joinKey,
+		BaseDir: joinBaseDir,
 		OnEvent: clientOnEvent,
 	})
 	if err != nil {

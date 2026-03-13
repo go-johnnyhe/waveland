@@ -36,6 +36,18 @@ final class SessionViewModel: ObservableObject {
             }
         }
 
+        shadowProcess.onStderr = { [weak self] text in
+            Task { @MainActor in
+                guard let self else { return }
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+                self.session.stderrLog.append(trimmed)
+                if self.session.stderrLog.count > 50 {
+                    self.session.stderrLog.removeFirst(self.session.stderrLog.count - 50)
+                }
+            }
+        }
+
         NotificationService.requestPermission()
     }
 
@@ -154,6 +166,8 @@ final class SessionViewModel: ObservableObject {
                     session.recentFiles.removeFirst(session.recentFiles.count - 5)
                 }
             }
+            session.liveSyncCount += 1
+            session.lastSyncTime = Date()
 
         case ShadowEventName.error:
             session.lastError = event.message
